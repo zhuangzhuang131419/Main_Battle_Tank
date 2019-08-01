@@ -1,0 +1,16 @@
+{
+	"FileVersion": 3,
+	"EngineAssociation": "4.22",
+	"Category": "",
+	"Description": "",
+	"Modules": [
+		{
+			"Name": "Main_Battle_Tank",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"Engine"
+			]
+		}
+	]
+}
