@@ -76,3 +76,13 @@ void ATrackedVechile::BuildTrackSplineCPlusPlus(USplineComponent * SplineCompone
 	}
 }
 
+void ATrackedVechile::AnimateTreadsInstancedMeshCPlusPlus(USplineComponent * SplineComponent, UInstancedStaticMeshComponent * TreadsMeshComponent)
+{
+
+}
+
+void ATrackedVechile::AddGravity()
+{
+	Body->AddForce(Body->GetMass() * FVector(0, 0, -980));
+}
+
