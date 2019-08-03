@@ -50,6 +50,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void BuildTrackSplineCPlusPlus(USplineComponent * SplineComponent, UInstancedStaticMeshComponent * TreadsMeshComponent, TArray<FVector> SplineCoordinates, TArray<FVector> SplineTangents, float TreadsOnSide);
 
+	UPROPERTY(BlueprintReadWrite)
+	int32 TreadsLastIndexCPlusPlus = 63;
 
 private:
 	UStaticMeshComponent* Body;
@@ -59,5 +61,8 @@ private:
 	UStaticMeshComponent* WheelSweep;
 	UStaticMeshComponent* Turrent;
 	USkeletalMeshComponent* Cannon;
+
+	
+
 
 };
