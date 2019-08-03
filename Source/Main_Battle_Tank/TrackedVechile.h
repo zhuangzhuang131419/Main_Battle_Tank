@@ -25,32 +25,7 @@ public:
 	// Sets default values for this pawn's properties
 	ATrackedVechile();
 
-	UPROPERTY(EditAnyWhere, BlueprintReadWrite)
-	UStaticMeshComponent* Body;
-	UPROPERTY(EditAnyWhere, BlueprintReadWrite)
-	UArrowComponent* COM;
-	UPROPERTY(EditAnyWhere, BlueprintReadWrite)
-	USkeletalMeshComponent* TreadR;
-	UPROPERTY(EditAnyWhere, BlueprintReadWrite)
-	USkeletalMeshComponent* TreadL;
-	UPROPERTY(EditAnyWhere, BlueprintReadWrite)
-	UStaticMeshComponent* WheelSweep;
-	UPROPERTY(EditAnyWhere, BlueprintReadWrite)
-	UStaticMeshComponent* Turrent;
-	UPROPERTY(EditAnyWhere, BlueprintReadWrite)
-	USpringArmComponent* MainCam;
-	UPROPERTY(EditAnyWhere, BlueprintReadWrite)
-	UCameraComponent* Camera;
-	UPROPERTY(EditAnyWhere, BlueprintReadWrite)
-	USkeletalMeshComponent* Cannon;
-	UPROPERTY(EditAnyWhere, BlueprintReadWrite)
-	USpringArmComponent* TurrentCam;
-	UPROPERTY(EditAnyWhere, BlueprintReadWrite)
-	USpringArmComponent* Front;
-	UPROPERTY(EditAnyWhere, BlueprintReadWrite)
-	USpringArmComponent* LookRight;
-	UPROPERTY(EditAnyWhere, BlueprintReadWrite)
-	USpringArmComponent* LookLeft;
+
 
 protected:
 	// Called when the game starts or when spawned
@@ -62,5 +37,27 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	UFUNCTION(BlueprintCallable, Category = "SetUp")
+	void Initialise(UStaticMeshComponent* BodyToSet, 
+		UArrowComponent* COMToSet, 
+		USkeletalMeshComponent* TreadRToSet,
+		USkeletalMeshComponent* TreadLToSet,
+		UStaticMeshComponent* WheelSweepToSet,
+		UStaticMeshComponent* TurrentToSet,
+		USkeletalMeshComponent* CannonToSet);
+
+	UFUNCTION(BlueprintCallable)
+	void BuildTrackSplineCPlusPlus(USplineComponent * SplineComponent, UInstancedStaticMeshComponent * TreadsMeshComponent, TArray<FVector> SplineCoordinates, TArray<FVector> SplineTangents, float TreadsOnSide);
+
+
+private:
+	UStaticMeshComponent* Body;
+	UArrowComponent* COM;
+	USkeletalMeshComponent* TreadR;
+	USkeletalMeshComponent* TreadL;
+	UStaticMeshComponent* WheelSweep;
+	UStaticMeshComponent* Turrent;
+	USkeletalMeshComponent* Cannon;
 
 };

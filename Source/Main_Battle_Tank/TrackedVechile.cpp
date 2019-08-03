@@ -2,6 +2,7 @@
 
 
 #include "TrackedVechile.h"
+#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 ATrackedVechile::ATrackedVechile()
@@ -9,32 +10,6 @@ ATrackedVechile::ATrackedVechile()
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	Body = CreateDefaultSubobject<UStaticMeshComponent>(FName("Body"));
-	COM = CreateDefaultSubobject<UArrowComponent>(FName("COM"));
-	TreadR = CreateDefaultSubobject<USkeletalMeshComponent>(FName("TreadR"));
-	TreadL = CreateDefaultSubobject<USkeletalMeshComponent>(FName("TreadL"));
-	WheelSweep = CreateDefaultSubobject<UStaticMeshComponent>(FName("WheelSweep"));
-	Turrent = CreateDefaultSubobject<UStaticMeshComponent>(FName("Turrent"));
-	MainCam = CreateDefaultSubobject<USpringArmComponent>(FName("MainCam"));
-	Camera = CreateDefaultSubobject<UCameraComponent>(FName("Camera"));
-	Cannon = CreateDefaultSubobject<USkeletalMeshComponent>(FName("Cannon"));
-	TurrentCam = CreateDefaultSubobject<USpringArmComponent>(FName("TurrentCam"));
-	Front = CreateDefaultSubobject<USpringArmComponent>(FName("Front"));
-	LookRight = CreateDefaultSubobject<USpringArmComponent>(FName("LookRight"));
-	LookLeft = CreateDefaultSubobject<USpringArmComponent>(FName("LookLeft"));
-
-	COM->AttachToComponent(Body, FAttachmentTransformRules::KeepWorldTransform);
-	TreadR->AttachToComponent(Body, FAttachmentTransformRules::KeepWorldTransform);
-	TreadL->AttachToComponent(Body, FAttachmentTransformRules::KeepWorldTransform);
-	WheelSweep->AttachToComponent(Body, FAttachmentTransformRules::KeepWorldTransform);
-	Turrent->AttachToComponent(Body, FAttachmentTransformRules::KeepWorldTransform);
-	MainCam->AttachToComponent(Turrent, FAttachmentTransformRules::KeepWorldTransform);
-	Camera->AttachToComponent(MainCam, FAttachmentTransformRules::KeepWorldTransform);
-	Cannon->AttachToComponent(Turrent, FAttachmentTransformRules::KeepWorldTransform);
-	TurrentCam->AttachToComponent(Cannon, FAttachmentTransformRules::KeepWorldTransform);
-	Front->AttachToComponent(Body, FAttachmentTransformRules::KeepWorldTransform);
-	LookRight->AttachToComponent(Body, FAttachmentTransformRules::KeepWorldTransform);
-	LookLeft->AttachToComponent(Body, FAttachmentTransformRules::KeepWorldTransform);
 }
 
 // Called when the game starts or when spawned
@@ -56,5 +31,48 @@ void ATrackedVechile::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+}
+
+void ATrackedVechile::Initialise(UStaticMeshComponent * BodyToSet, UArrowComponent * COMToSet, USkeletalMeshComponent * TreadRToSet, USkeletalMeshComponent * TreadLToSet, UStaticMeshComponent * WheelSweepToSet, UStaticMeshComponent * TurrentToSet, USkeletalMeshComponent * CannonToSet)
+{
+	Body = BodyToSet;
+	COM = COMToSet;
+	TreadR = TreadRToSet;
+	TreadL = TreadLToSet;
+	WheelSweep = WheelSweepToSet;
+	Turrent = TurrentToSet;
+	Cannon = CannonToSet;
+}
+
+void ATrackedVechile::BuildTrackSplineCPlusPlus(USplineComponent * SplineComponent, UInstancedStaticMeshComponent * TreadsMeshComponent, TArray<FVector> SplineCoordinates, TArray<FVector> SplineTangents, float TreadsOnSide)
+{
+	auto TreadsLastIndex = (int32)TreadsOnSide - 1;
+	SplineComponent->SetSplinePoints(SplineCoordinates, ESplineCoordinateSpace::Local);
+
+	for (size_t i = 0; i < SplineTangents.Num(); i++)
+	{
+		SplineComponent->SetTangentAtSplinePoint(i, SplineTangents[i], ESplineCoordinateSpace::Local);
+	}
+
+	for (size_t i = 0; i < TreadsLastIndex; i++)
+	{
+		float distance = (SplineComponent->GetSplineLength() / TreadsOnSide) * i;
+		FVector location = SplineComponent->GetLocationAtDistanceAlongSpline(distance, ESplineCoordinateSpace::Local);
+		FRotator rotation = SplineComponent->GetRotationAtDistanceAlongSpline(distance, ESplineCoordinateSpace::Local);
+		FVector right = SplineComponent->GetRightVectorAtDistanceAlongSpline(distance, ESplineCoordinateSpace::Local);
+
+		if (right.Y < 0)
+		{
+			rotation.Roll = 180;
+		}
+
+		TreadsMeshComponent->AddInstance(
+			UKismetMathLibrary::MakeTransform(
+				location,
+				rotation,
+				FVector(1, 1, 1)
+			)
+		);
+	}
 }
 
