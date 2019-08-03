@@ -43,9 +43,15 @@ void UTankAimingComponent::Initialise(USkeletalMeshComponent * CannonToSet, USta
 
 void UTankAimingComponent::MoveCannonTowards(FVector AimDirection)
 {
-	if (!ensure(Cannon) || !ensure(Turret))
+	if (ensure(Cannon) && ensure(Turret))
 	{
+
 		auto DeltaRotator = AimDirection.Rotation() - Cannon->GetForwardVector().Rotation();
+
+		UE_LOG(LogTemp, Warning, TEXT("AimDirectionAsRotator: %s"), *AimDirection.Rotation().ToString());
+
+		// Turret->SetRelativeRotation(FRotator(0, 180 + AimDirection.Rotation().Yaw, 0));
+		// UE_LOG(LogTemp, Warning, TEXT("AimDirectionAsRotator: Yaw: %f, Cannon: Yaw: %f"), AimDirection.Rotation().Yaw, Cannon->GetRelativeTransform().GetRotation().Z);
 		ElevateCannon(DeltaRotator.Pitch);
 		if (FMath::Abs(DeltaRotator.Yaw) < 180)
 		{
@@ -75,7 +81,7 @@ void UTankAimingComponent::AimAt(FVector HitLocation)
 
 	if (bHaveAimSolution)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("AimDirection: %s"), *AimDirection.ToString());
+		
 		AimDirection = OutLaunchVelocity.GetSafeNormal();
 		MoveCannonTowards(AimDirection);
 	}
@@ -83,19 +89,19 @@ void UTankAimingComponent::AimAt(FVector HitLocation)
 
 void UTankAimingComponent::ElevateCannon(float RelativeSpeed)
 {
-	float maxDegreePerSecond = 90;
-	auto DegreeChanges = RelativeSpeed * maxDegreePerSecond * GetWorld()->DeltaTimeSeconds;
 	RelativeSpeed = FMath::Clamp<float>(RelativeSpeed, -1, +1);
+	float maxDegreePerSecond = 5;
+	auto DegreeChanges = RelativeSpeed * maxDegreePerSecond * GetWorld()->DeltaTimeSeconds;
 	Cannon->SetRelativeRotation(
 		FRotator(DegreeChanges + Cannon->GetRelativeTransform().Rotator().Pitch, 0, 0));
 }
 
 void UTankAimingComponent::RotateTurret(float RelativeSpeed)
 {
-	float maxDegreePerSecond = 90;
-	auto DegreeChanges = RelativeSpeed * maxDegreePerSecond * GetWorld()->DeltaTimeSeconds;
+	float maxDegreePerSecond = 50;
 	RelativeSpeed = FMath::Clamp<float>(RelativeSpeed, -1, +1);
-	Turret->SetRelativeRotation(
-		FRotator(0, DegreeChanges + Cannon->GetRelativeTransform().Rotator().Yaw, 0));
+	auto RotationChanges = RelativeSpeed * maxDegreePerSecond * GetWorld()->DeltaTimeSeconds;
+	auto NewRotation = Turret->GetRelativeTransform().Rotator().Yaw + RotationChanges;
+	Turret->SetRelativeRotation(FRotator(0, NewRotation, 0));
 }
 
