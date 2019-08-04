@@ -72,6 +72,12 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	int32 TreadsLastIndexCPlusPlus = 63;
 
+	UPROPERTY(BlueprintReadWrite)
+	int32 NeutralGearIndex;
+
+	UPROPERTY(BlueprintReadWrite)
+	int32 CurrentGear;
+
 
 	UPROPERTY(BlueprintReadWrite, Category = "Physics")
 	float MomentInertia;
