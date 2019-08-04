@@ -61,6 +61,11 @@ void ATrackedVechile::UpdateWheelsVelocity()
 	TrackLeftLinearVelocity = TrackLeftAngularVelocity * SproketRadius_cm;
 }
 
+void ATrackedVechile::UpdateAxlsVelocity()
+{
+	AxisAngularVelocity = (UKismetMathLibrary::Abs(TrackRightAngularVelocity) + UKismetMathLibrary::Abs(TrackLeftAngularVelocity)) / 2;
+}
+
 float ATrackedVechile::ApplyBrake(float AngularVelocity, float BrakeRatio)
 {
 	float BrakeImpulse = GetWorld()->DeltaTimeSeconds * BrakeForce * BrakeRatio;

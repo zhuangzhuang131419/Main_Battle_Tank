@@ -52,6 +52,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void UpdateWheelsVelocity();
+	UFUNCTION(BlueprintCallable)
+	void UpdateAxlsVelocity();
 
 
 	float ApplyBrake(float AngularVelocity, float BrakeRatio);
@@ -106,9 +108,12 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "Physics")
 	float TrackLeftAngularVelocity;
 	UPROPERTY(BlueprintReadWrite, Category = "Physics")
+	float AxisAngularVelocity;
+	UPROPERTY(BlueprintReadWrite, Category = "Physics")
 	float TrackRightLinearVelocity;
 	UPROPERTY(BlueprintReadWrite, Category = "Physics")
 	float TrackLeftLinearVelocity;
+
 
 	//
 	UPROPERTY(BlueprintReadWrite, Category = "Physics")
@@ -182,6 +187,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
 	float EngineExtraPowerRatio = 3;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
+	UCurveFloat* EngineTorqueCurve;
 
 
 private:
