@@ -51,6 +51,8 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	UFUNCTION(BlueprintCallable)
+	void UpdateThrottle();
+	UFUNCTION(BlueprintCallable)
 	void UpdateWheelsVelocity();
 	UFUNCTION(BlueprintCallable)
 	void UpdateAxlsVelocity();
@@ -75,6 +77,14 @@ public:
 	float MomentInertia;
 	UPROPERTY(BlueprintReadWrite, Category = "Physics")
 	float Throttle;
+
+	// Wheel
+	UPROPERTY(BlueprintReadWrite, Category = "Physics")
+	float WheelRightCoefficient;
+	UPROPERTY(BlueprintReadWrite, Category = "Physics")
+	float WheelForwardCoefficient;
+	UPROPERTY(BlueprintReadWrite, Category = "Physics")
+	float WheelLeftCoefficient;
 
 	// Torque
 	UPROPERTY(BlueprintReadWrite, Category = "Physics")

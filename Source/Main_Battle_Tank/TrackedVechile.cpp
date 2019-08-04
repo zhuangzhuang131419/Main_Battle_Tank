@@ -41,6 +41,25 @@ void ATrackedVechile::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 
 }
 
+void ATrackedVechile::UpdateThrottle()
+{
+	TrackTorqueTransferRight = FMath::Clamp<float>(WheelRightCoefficient + WheelForwardCoefficient, -1, 2);
+	TrackTorqueTransferLeft = FMath::Clamp<float>(WheelLeftCoefficient + WheelForwardCoefficient, -1, 2);
+
+	float ThrottleIncrement;
+	if (UKismetMathLibrary::Max(UKismetMathLibrary::Abs(TrackTorqueTransferRight), UKismetMathLibrary::Abs(TrackTorqueTransferLeft)) != 0)
+	{
+		ThrottleIncrement = 0.5;
+	}
+	else
+	{
+		ThrottleIncrement = -1;
+	}
+
+	Throttle += GetWorld()->DeltaTimeSeconds * ThrottleIncrement;
+	Throttle = FMath::Clamp<float>(Throttle, 0, 1);
+}
+
 void ATrackedVechile::UpdateWheelsVelocity()
 {
 	/// 物理知识
