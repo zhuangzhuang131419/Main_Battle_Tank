@@ -3,6 +3,7 @@
 
 #include "TrackedVechile.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Curves/CurveFloat.h"
 
 // Sets default values
 ATrackedVechile::ATrackedVechile()
@@ -151,4 +152,29 @@ void ATrackedVechile::AddGravity()
 {
 	Body->AddForce(Body->GetMass() * FVector(0, 0, -980));
 }
+
+float ATrackedVechile::GetEngineTorque(float RevolutionPerMinute)
+{
+	float MinTime;
+	float MaxTime;
+	EngineTorqueCurve->GetTimeRange(MinTime, MaxTime);
+	EngineRPM = FMath::Clamp<float>(RevolutionPerMinute, MinTime, MaxTime);
+	// MaxTorque
+	return EngineTorqueCurve->GetFloatValue(EngineRPM) * 100; // cm to m
+}
+
+float ATrackedVechile::GetGearBoxTorque(float EngineTorque)
+{
+	float GearBoxTorque = GearRatios[CurrentGear] * DifferentialRatio * TransmissionEfficiency * EngineTorque * EngineExtraPowerRatio;
+	return ReverseGear ? -GearBoxTorque : GearBoxTorque;
+}
+
+float ATrackedVechile::GetEngineRPMFromAxls(float AxlsAngularVelocity)
+{
+	/// 物理知识
+	// w(角速度) = 2 * PI * n（转速）
+	return (AxlsAngularVelocity * GearRatios[CurrentGear] * DifferentialRatio * 60) / UKismetMathLibrary::GetPI() / 2;
+}
+
+
 

@@ -69,14 +69,22 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void AddGravity();
 
+	float GetEngineTorque(float RevolutionPerMinute);
+	float GetGearBoxTorque(float EngineTorque);
+	float GetEngineRPMFromAxls(float AxlsAngularVelocity);
+
 	UPROPERTY(BlueprintReadWrite)
 	int32 TreadsLastIndexCPlusPlus = 63;
-
 	UPROPERTY(BlueprintReadWrite)
 	int32 NeutralGearIndex;
-
 	UPROPERTY(BlueprintReadWrite)
 	int32 CurrentGear;
+
+	UPROPERTY(BlueprintReadWrite)
+	float EngineRPM;
+	UPROPERTY(BlueprintReadWrite)
+	bool ReverseGear;
+
 
 
 	UPROPERTY(BlueprintReadWrite, Category = "Physics")
