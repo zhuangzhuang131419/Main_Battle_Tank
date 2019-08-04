@@ -73,6 +73,8 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, Category = "Physics")
 	float MomentInertia;
+	UPROPERTY(BlueprintReadWrite, Category = "Physics")
+	float Throttle;
 
 	// Torque
 	UPROPERTY(BlueprintReadWrite, Category = "Physics")
