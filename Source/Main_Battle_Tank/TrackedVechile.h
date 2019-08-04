@@ -25,6 +25,18 @@ public:
 	// Sets default values for this pawn's properties
 	ATrackedVechile();
 
+	UFUNCTION(BlueprintCallable, Category = "SetUp")
+		void Initialise(UStaticMeshComponent* BodyToSet,
+			UArrowComponent* COMToSet,
+			USkeletalMeshComponent* TreadRToSet,
+			USkeletalMeshComponent* TreadLToSet,
+			UStaticMeshComponent* WheelSweepToSet,
+			UStaticMeshComponent* TurrentToSet,
+			USkeletalMeshComponent* CannonToSet);
+
+	UFUNCTION(BlueprintCallable)
+	void PreCalculateMomentOfInteria();
+
 
 
 protected:
@@ -38,15 +50,12 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	UFUNCTION(BlueprintCallable, Category = "SetUp")
-	void Initialise(UStaticMeshComponent* BodyToSet, 
-		UArrowComponent* COMToSet, 
-		USkeletalMeshComponent* TreadRToSet,
-		USkeletalMeshComponent* TreadLToSet,
-		UStaticMeshComponent* WheelSweepToSet,
-		UStaticMeshComponent* TurrentToSet,
-		USkeletalMeshComponent* CannonToSet);
+	UFUNCTION(BlueprintCallable)
+	void UpdateWheelsVelocity();
 
+
+	float ApplyBrake(float AngularVelocity, float BrakeRatio);
+	
 	UFUNCTION(BlueprintCallable)
 	void BuildTrackSplineCPlusPlus(USplineComponent * SplineComponent, UInstancedStaticMeshComponent * TreadsMeshComponent, TArray<FVector> SplineCoordinates, TArray<FVector> SplineTangents, float TreadsOnSide);
 
@@ -58,6 +67,52 @@ public:
 
 	UPROPERTY(BlueprintReadWrite)
 	int32 TreadsLastIndexCPlusPlus = 63;
+
+
+	UPROPERTY(BlueprintReadWrite, Category = "Physics")
+	float MomentInertia;
+
+	// Torque
+	UPROPERTY(BlueprintReadWrite, Category = "Physics")
+	float TrackTorqueTransferRight;
+	UPROPERTY(BlueprintReadWrite, Category = "Physics")
+	float TrackTorqueTransferLeft;
+	UPROPERTY(BlueprintReadWrite, Category = "Physics")
+	float TrackRightTorque;
+	UPROPERTY(BlueprintReadWrite, Category = "Physics")
+	float TrackLeftTorque;
+	UPROPERTY(BlueprintReadWrite, Category = "Physics")
+	float DriveRightTorque;
+	UPROPERTY(BlueprintReadWrite, Category = "Physics")
+	float DriveLeftTorque;
+	UPROPERTY(BlueprintReadWrite, Category = "Physics")
+	float DriveAxlsTorque;
+	UPROPERTY(BlueprintReadWrite, Category = "Physics")
+	float TrackFrictionTorque;
+	UPROPERTY(BlueprintReadWrite, Category = "Physics")
+	float TrackFrictionTorqueRight;
+	UPROPERTY(BlueprintReadWrite, Category = "Physics")
+	float TrackFrictionTorqueLeft;
+	UPROPERTY(BlueprintReadWrite, Category = "Physics")
+	float TrackRollingFrictionTorque;
+	UPROPERTY(BlueprintReadWrite, Category = "Physics")
+	float TrackRollingFrictionTorqueRight;
+	UPROPERTY(BlueprintReadWrite, Category = "Physics")
+	float TrackRollingFrictionTorqueLeft;
+
+	// Velocity
+	UPROPERTY(BlueprintReadWrite, Category = "Physics")
+	float TrackRightAngularVelocity;
+	UPROPERTY(BlueprintReadWrite, Category = "Physics")
+	float TrackLeftAngularVelocity;
+	UPROPERTY(BlueprintReadWrite, Category = "Physics")
+	float TrackRightLinearVelocity;
+	UPROPERTY(BlueprintReadWrite, Category = "Physics")
+	float TrackLeftLinearVelocity;
+
+	//
+	UPROPERTY(BlueprintReadWrite, Category = "Physics")
+	float BrakeRatio;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
 	float TrackMass_kg = 600;

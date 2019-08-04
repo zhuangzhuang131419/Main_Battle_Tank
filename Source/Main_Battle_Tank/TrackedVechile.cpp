@@ -12,6 +12,14 @@ ATrackedVechile::ATrackedVechile()
 
 }
 
+void ATrackedVechile::PreCalculateMomentOfInteria()
+{
+	// 物理知识
+	// I（转动惯量）= m（质量）* r（质点和转轴垂直距离）
+	MomentInertia = (SproketMass_kg * 0.5 + TrackMass_kg) * SproketRadius_cm * SproketRadius_cm;
+	UE_LOG(LogTemp, Warning, TEXT("The MomentInertia of sprocket is %f"), MomentInertia);
+}
+
 // Called when the game starts or when spawned
 void ATrackedVechile::BeginPlay()
 {
@@ -31,6 +39,40 @@ void ATrackedVechile::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+}
+
+void ATrackedVechile::UpdateWheelsVelocity()
+{
+	/// 物理知识
+	// M(力矩/Torque) = I(转动惯量/MomentInertia) * a(角加速度/AngularAccelaration)
+
+	// 计算力矩
+	// Total torque on right track
+	TrackRightTorque = DriveRightTorque + TrackFrictionTorqueRight + TrackRollingFrictionTorqueRight;
+	// Total torque on left track
+	TrackLeftTorque = DriveLeftTorque + TrackFrictionTorqueLeft + TrackRollingFrictionTorqueLeft;
+
+	// 计算角速度
+	TrackRightAngularVelocity = ApplyBrake(TrackRightTorque / MomentInertia * GetWorld()->DeltaTimeSeconds + TrackRightAngularVelocity, BrakeRatio);
+	TrackLeftAngularVelocity = ApplyBrake(TrackLeftTorque / MomentInertia * GetWorld()->DeltaTimeSeconds + TrackLeftAngularVelocity, BrakeRatio);
+
+	// 计算线速度
+	TrackRightLinearVelocity = TrackRightAngularVelocity * SproketRadius_cm;
+	TrackLeftLinearVelocity = TrackLeftAngularVelocity * SproketRadius_cm;
+}
+
+float ATrackedVechile::ApplyBrake(float AngularVelocity, float BrakeRatio)
+{
+	float BrakeImpulse = GetWorld()->DeltaTimeSeconds * BrakeForce * BrakeRatio;
+
+	if (UKismetMathLibrary::Abs(AngularVelocity) > UKismetMathLibrary::Abs(BrakeImpulse))
+	{
+		return AngularVelocity - UKismetMathLibrary::SignOfFloat(AngularVelocity) * BrakeImpulse;
+	}
+	else
+	{
+		return 0.0;
+	}
 }
 
 void ATrackedVechile::Initialise(UStaticMeshComponent * BodyToSet, UArrowComponent * COMToSet, USkeletalMeshComponent * TreadRToSet, USkeletalMeshComponent * TreadLToSet, UStaticMeshComponent * WheelSweepToSet, UStaticMeshComponent * TurrentToSet, USkeletalMeshComponent * CannonToSet)
