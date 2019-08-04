@@ -209,6 +209,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
 	UCurveFloat* EngineTorqueCurve;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
+	TArray<float> GearRatios = { 4.35, 0, 3.81, 1.93, 1 };
+
 
 private:
 	UStaticMeshComponent* Body;
