@@ -72,6 +72,8 @@ public:
 	float GetEngineTorque(float RevolutionPerMinute);
 	float GetGearBoxTorque(float EngineTorque);
 	float GetEngineRPMFromAxls(float AxlsAngularVelocity);
+	UFUNCTION(BlueprintCallable)
+	void CalculateEngineAndUpdateDrive();
 
 	UPROPERTY(BlueprintReadWrite)
 	int32 TreadsLastIndexCPlusPlus = 63;
@@ -101,6 +103,8 @@ public:
 	float WheelLeftCoefficient;
 
 	// Torque
+	UPROPERTY(BlueprintReadWrite, Category = "Physics")
+	float EngineTorque;
 	UPROPERTY(BlueprintReadWrite, Category = "Physics")
 	float TrackTorqueTransferRight;
 	UPROPERTY(BlueprintReadWrite, Category = "Physics")
@@ -140,6 +144,11 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "Physics")
 	float TrackLeftLinearVelocity;
 
+	// Force
+	UPROPERTY(BlueprintReadWrite, Category = "Physics")
+	FVector DriveRightForce;
+	UPROPERTY(BlueprintReadWrite, Category = "Physics")
+	FVector DriveLeftForce;
 
 	//
 	UPROPERTY(BlueprintReadWrite, Category = "Physics")

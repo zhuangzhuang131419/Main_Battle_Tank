@@ -176,5 +176,19 @@ float ATrackedVechile::GetEngineRPMFromAxls(float AxlsAngularVelocity)
 	return (AxlsAngularVelocity * GearRatios[CurrentGear] * DifferentialRatio * 60) / UKismetMathLibrary::GetPI() / 2;
 }
 
+void ATrackedVechile::CalculateEngineAndUpdateDrive()
+{
+	float maxEngineTorque = GetEngineTorque(GetEngineRPMFromAxls(AxisAngularVelocity));
+	EngineTorque = maxEngineTorque * Throttle;
+	DriveAxlsTorque = GetGearBoxTorque(EngineTorque);
+
+	DriveRightTorque = TrackTorqueTransferRight * DriveAxlsTorque;
+	DriveLeftTorque = TrackTorqueTransferLeft * DriveAxlsTorque;
+
+	// M£¨Á¦¾Ø£© = F * L
+	DriveRightForce = GetActorForwardVector() * DriveRightTorque / SproketRadius_cm;
+	DriveLeftForce = GetActorForwardVector() * DriveLeftTorque / SproketRadius_cm;
+}
+
 
 
