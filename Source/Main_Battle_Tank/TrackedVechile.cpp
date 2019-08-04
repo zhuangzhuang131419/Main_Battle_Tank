@@ -190,5 +190,14 @@ void ATrackedVechile::CalculateEngineAndUpdateDrive()
 	DriveLeftForce = GetActorForwardVector() * DriveLeftTorque / SproketRadius_cm;
 }
 
+void ATrackedVechile::GetMuFromFrictionEllipse(FVector VelocityDirectionNormalized, FVector ForwardVector, float Mu_X_Static, float Mu_Y_Static, float Mu_X_Kinetic, float Mu_Y_Kinetic, OUT float & Mu_Static, OUT float & Mu_Kinetic)
+{
+	float forwardVelocity = UKismetMathLibrary::Dot_VectorVector(VelocityDirectionNormalized, ForwardVector);
+	Mu_Static = FVector2D(Mu_X_Static * forwardVelocity,
+		UKismetMathLibrary::Sqrt(1 - forwardVelocity * forwardVelocity) * Mu_Y_Static).Size();
+	Mu_Kinetic = FVector2D(Mu_X_Kinetic * forwardVelocity,
+		UKismetMathLibrary::Sqrt(1 - forwardVelocity * forwardVelocity) * Mu_Y_Kinetic).Size();
+}
+
 
 

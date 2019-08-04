@@ -75,6 +75,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void CalculateEngineAndUpdateDrive();
 
+	void GetMuFromFrictionEllipse(FVector VelocityDirectionNormalized, FVector ForwardVector, float Mu_X_Static, float Mu_Y_Static, float Mu_X_Kinetic, float Mu_Y_Kinetic, OUT float& Mu_Static, OUT float& Mu_Kinetic);
+
 	UPROPERTY(BlueprintReadWrite)
 	int32 TreadsLastIndexCPlusPlus = 63;
 	UPROPERTY(BlueprintReadWrite)
