@@ -153,6 +153,44 @@ void ATrackedVechile::AddGravity()
 	Body->AddForce(Body->GetMass() * FVector(0, 0, -980));
 }
 
+void ATrackedVechile::PositionAndAnimateDriveWheels(UStaticMeshComponent * WheelComponent, FSuspensionInternalProcessingC SuspensionSet, int32 SuspensionIndex, ESide side, bool FlipAnimation180Degrees)
+{
+	WheelComponent->SetWorldLocation(
+		UKismetMathLibrary::TransformLocation(
+			GetActorTransform(),
+			UKismetMathLibrary::TransformLocation(
+				UKismetMathLibrary::MakeTransform(SuspensionSet.RootLoc, SuspensionSet.RootRot, FVector(1, 1, 1)),
+				FVector(0, 0, -SuspensionSet.PreviousLength)
+			)
+		)
+	);
+
+	FRotator localRotator;
+	float trackAngularVelocity = 0;
+	switch (side)
+	{
+	case ESide::Left:
+		trackAngularVelocity = TrackLeftAngularVelocity;
+		break;
+	case ESide::Right:
+		trackAngularVelocity = TrackRightAngularVelocity;
+		break;
+	default:
+		break;
+	}
+
+	if (FlipAnimation180Degrees)
+	{
+		localRotator = FRotator(UKismetMathLibrary::RadiansToDegrees(trackAngularVelocity) * GetWorld()->DeltaTimeSeconds, 0, 0);
+	}
+	else
+	{
+		localRotator = FRotator(-UKismetMathLibrary::RadiansToDegrees(trackAngularVelocity) * GetWorld()->DeltaTimeSeconds, 0, 0);
+	}
+
+	WheelComponent->AddLocalRotation(localRotator);
+}
+
 float ATrackedVechile::GetEngineTorque(float RevolutionPerMinute)
 {
 	float MinTime;

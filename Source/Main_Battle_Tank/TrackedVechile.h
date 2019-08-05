@@ -16,6 +16,13 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "TrackedVechile.generated.h"
 
+UENUM(BlueprintType)
+enum class ESide : uint8
+{
+	Left,
+	Right
+};
+
 USTRUCT(BlueprintType)
 struct FSuspensionSetUp
 {
@@ -140,6 +147,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void AddGravity();
+
+	UFUNCTION(BlueprintCallable)
+	void PositionAndAnimateDriveWheels(UStaticMeshComponent* WheelComponent, FSuspensionInternalProcessingC SuspensionSet, int32 SuspensionIndex, ESide side, bool FlipAnimation180Degrees);
 
 	float GetEngineTorque(float RevolutionPerMinute);
 	float GetGearBoxTorque(float EngineTorque);
