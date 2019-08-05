@@ -111,6 +111,21 @@ float ATrackedVechile::ApplyBrake(float AngularVelocity, float BrakeRatio)
 	}
 }
 
+void ATrackedVechile::AnimateSprocketOrIdler(UStaticMeshComponent * SprocketOrIdlerComponnet, float TrackAngularVelocity, bool FlipAnimation180Degrees)
+{
+	// 转动主动轮和惰轮
+	FRotator localRotator;
+	if (FlipAnimation180Degrees)
+	{
+		localRotator = FRotator(UKismetMathLibrary::RadiansToDegrees(TrackAngularVelocity) * GetWorld()->DeltaTimeSeconds, 0, 0);
+	}
+	else
+	{
+		localRotator = FRotator(-UKismetMathLibrary::RadiansToDegrees(TrackAngularVelocity) * GetWorld()->DeltaTimeSeconds, 0, 0);
+	}
+	SprocketOrIdlerComponnet->AddLocalRotation(localRotator);
+}
+
 void ATrackedVechile::Initialise(UStaticMeshComponent * BodyToSet, UArrowComponent * COMToSet, USkeletalMeshComponent * TreadRToSet, USkeletalMeshComponent * TreadLToSet, UStaticMeshComponent * WheelSweepToSet, UStaticMeshComponent * TurrentToSet, USkeletalMeshComponent * CannonToSet)
 {
 	Body = BodyToSet;

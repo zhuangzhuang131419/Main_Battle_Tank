@@ -142,6 +142,8 @@ public:
 
 
 	float ApplyBrake(float AngularVelocity, float BrakeRatio);
+	UFUNCTION(BlueprintCallable)
+	void AnimateSprocketOrIdler(UStaticMeshComponent* SprocketOrIdlerComponnet, float TrackAngularVelocity, bool FlipAnimation180Degrees);
 	
 	UFUNCTION(BlueprintCallable)
 	void BuildTrackSplineCPlusPlus(USplineComponent * SplineComponent, UInstancedStaticMeshComponent * TreadsMeshComponent, TArray<FVector> SplineCoordinates, TArray<FVector> SplineTangents, float TreadsOnSide);
