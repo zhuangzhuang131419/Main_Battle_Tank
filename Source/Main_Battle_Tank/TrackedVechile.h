@@ -16,6 +16,88 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "TrackedVechile.generated.h"
 
+USTRUCT(BlueprintType)
+struct FSuspensionSetUp
+{
+	GENERATED_USTRUCT_BODY()
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	FVector RootLoc;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	FRotator RootRot;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float MaxLength;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float CollisionRadius;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float StiffnessForce; // 刚度 材料或结构在受力时抵抗弹性形变的能力
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float DampingForce; // 阻尼力
+
+	//FSuspensionSetUp() {}
+
+	//FSuspensionSetUp(FVector RootLoc, FRotator RootRot, float MaxLength = 23, float CollisionRadius = 34, float StiffnessForce = 4000000, float DampingForce = 4000)
+	//{
+	//	this->RootLoc = RootLoc;
+	//	this->RootRot = RootRot;
+	//	this->MaxLength = MaxLength;
+	//	this->CollisionRadius = CollisionRadius;
+	//	this->StiffnessForce = StiffnessForce;
+	//	this->DampingForce = DampingForce;
+	//}
+};
+//
+//USTRUCT(BlueprintType)
+//struct FSuspensionInternalProcessing
+//{
+//	GENERATED_USTRUCT_BODY()
+//
+//	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+//	FVector RootLoc;
+//	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+//	FRotator RootRot;
+//	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+//	float Length;
+//	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+//	float Radius;
+//	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+//	float Stiffness;
+//	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+//	float Damping;
+//	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+//	float PreviousLength;
+//	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+//	FVector SuspensionForce;
+//	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+//	FVector WheelCollisionLocation;
+//	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+//	FVector WheelCollisionNormal;
+//	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+//	bool Engaged = false;
+//	EPhysicalSurface HitMaterial;
+//
+//	FSuspensionInternalProcessing() {}
+//
+//	FSuspensionInternalProcessing(FVector RootLoc, FRotator RootRot, float Length = 100, float Radius = 100, float Stiffness = 0.5, float Damping = 0.5)
+//	{
+//		this->RootLoc = RootLoc;
+//		this->RootRot = RootRot;
+//		this->Length = Length;
+//		this->Radius = Radius;
+//		this->Stiffness = Stiffness;
+//		this->Damping = Damping;
+//	}
+//};
+
+USTRUCT(BlueprintType)
+struct FMyStruct
+{
+	GENERATED_USTRUCT_BODY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 ID;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 male;
+};
+
 UCLASS()
 class MAIN_BATTLE_TANK_API ATrackedVechile : public APawn
 {
@@ -26,7 +108,7 @@ public:
 	ATrackedVechile();
 
 	UFUNCTION(BlueprintCallable, Category = "SetUp")
-		void Initialise(UStaticMeshComponent* BodyToSet,
+	void Initialise(UStaticMeshComponent* BodyToSet,
 			UArrowComponent* COMToSet,
 			USkeletalMeshComponent* TreadRToSet,
 			USkeletalMeshComponent* TreadLToSet,
@@ -89,7 +171,8 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	bool ReverseGear;
 
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Physics")
+	FMyStruct my;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Physics")
 	float MomentInertia;
@@ -155,6 +238,11 @@ public:
 	//
 	UPROPERTY(BlueprintReadWrite, Category = "Physics")
 	float BrakeRatio;
+
+	//UPROPERTY(BlueprintReadWrite, Category = "Physics")
+	//TArray<FSuspensionInternalProcessing> SuspensionsInternalRight;
+	//UPROPERTY(BlueprintReadWrite, Category = "Physics")
+	//TArray<FSuspensionInternalProcessing> SuspensionsInternalLeft;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
 	float TrackMass_kg = 600;
@@ -231,6 +319,12 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
 	TArray<float> GearRatios = { 4.35, 0, 3.81, 1.93, 1 };
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
+	TArray<FSuspensionSetUp> SuspensionSetUpRight;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
+	TArray<FSuspensionSetUp> SuspensionSetUpLeft;
+
+	
 
 private:
 	UStaticMeshComponent* Body;
