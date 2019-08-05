@@ -86,6 +86,17 @@ void ATrackedVechile::UpdateAxlsVelocity()
 	AxisAngularVelocity = (UKismetMathLibrary::Abs(TrackRightAngularVelocity) + UKismetMathLibrary::Abs(TrackLeftAngularVelocity)) / 2;
 }
 
+FVector ATrackedVechile::GetVelocityAtPointWorld(FVector PointLoc)
+{
+	FVector localLinearVelocity = UKismetMathLibrary::InverseTransformDirection(GetActorTransform(), Body->GetPhysicsLinearVelocity());
+	FVector localVelocityInRadius = UKismetMathLibrary::InverseTransformDirection(GetActorTransform(), Body->GetPhysicsAngularVelocityInRadians());
+
+	FVector localCenterOfMass = UKismetMathLibrary::InverseTransformLocation(GetActorTransform(), Body->GetCenterOfMass());
+	FVector localAngualrVelocity = UKismetMathLibrary::Cross_VectorVector(localVelocityInRadius, UKismetMathLibrary::InverseTransformLocation(GetActorTransform(), PointLoc) - localCenterOfMass/*距离重心的位置*/);
+	FVector localVelocity = localLinearVelocity + localAngualrVelocity;
+	return UKismetMathLibrary::TransformDirection(GetActorTransform(), localVelocity);
+}
+
 float ATrackedVechile::ApplyBrake(float AngularVelocity, float BrakeRatio)
 {
 	float BrakeImpulse = GetWorld()->DeltaTimeSeconds * BrakeForce * BrakeRatio;
@@ -155,6 +166,7 @@ void ATrackedVechile::AddGravity()
 
 void ATrackedVechile::PositionAndAnimateDriveWheels(UStaticMeshComponent * WheelComponent, FSuspensionInternalProcessingC SuspensionSet, int32 SuspensionIndex, ESide side, bool FlipAnimation180Degrees)
 {
+	// 设置轮胎位置
 	WheelComponent->SetWorldLocation(
 		UKismetMathLibrary::TransformLocation(
 			GetActorTransform(),
@@ -226,6 +238,18 @@ void ATrackedVechile::CalculateEngineAndUpdateDrive()
 	// M（力矩） = F * L
 	DriveRightForce = GetActorForwardVector() * DriveRightTorque / SproketRadius_cm;
 	DriveLeftForce = GetActorForwardVector() * DriveLeftTorque / SproketRadius_cm;
+}
+
+void ATrackedVechile::CountFrictionContactPoint(TArray<FSuspensionInternalProcessingC> SuspSide)
+{
+	for (size_t i = 0; i < SuspSide.Num(); i++)
+	{
+		// 有接触才计入TotalNumFrctionPoints中
+		if (SuspSide[i].Engaged)
+		{
+			TotalNumFrictionPoints++;
+		}
+	}
 }
 
 void ATrackedVechile::GetMuFromFrictionEllipse(FVector VelocityDirectionNormalized, FVector ForwardVector, float Mu_X_Static, float Mu_Y_Static, float Mu_X_Kinetic, float Mu_Y_Kinetic, OUT float & Mu_Static, OUT float & Mu_Kinetic)
