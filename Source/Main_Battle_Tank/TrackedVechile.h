@@ -136,12 +136,16 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void UpdateAxlsVelocity();
 
+	
+	UFUNCTION(BlueprintCallable)
+	bool PutToSleep();
 	// local
 	UFUNCTION(BlueprintCallable)
 	FVector GetVelocityAtPointWorld(FVector PointLoc);
 
 
 	float ApplyBrake(float AngularVelocity, float BrakeRatio);
+
 	UFUNCTION(BlueprintCallable)
 	void AnimateSprocketOrIdler(UStaticMeshComponent* SprocketOrIdlerComponnet, float TrackAngularVelocity, bool FlipAnimation180Degrees);
 	
@@ -164,7 +168,6 @@ public:
 	void CalculateEngineAndUpdateDrive();
 	UFUNCTION(BlueprintCallable)
 	void CountFrictionContactPoint(TArray<FSuspensionInternalProcessingC> SuspSide);
-
 	void GetMuFromFrictionEllipse(FVector VelocityDirectionNormalized, FVector ForwardVector, float Mu_X_Static, float Mu_Y_Static, float Mu_X_Kinetic, float Mu_Y_Kinetic, OUT float& Mu_Static, OUT float& Mu_Kinetic);
 
 	UPROPERTY(BlueprintReadWrite)
@@ -178,6 +181,10 @@ public:
 	float EngineRPM;
 	UPROPERTY(BlueprintReadWrite)
 	bool ReverseGear;
+	UPROPERTY(BlueprintReadWrite)
+	bool SleepMode = false;
+	UPROPERTY(BlueprintReadWrite)
+	float SleepDelayTimer;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Physics")
 	int32 TotalNumFrictionPoints;

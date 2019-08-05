@@ -86,6 +86,43 @@ void ATrackedVechile::UpdateAxlsVelocity()
 	AxisAngularVelocity = (UKismetMathLibrary::Abs(TrackRightAngularVelocity) + UKismetMathLibrary::Abs(TrackLeftAngularVelocity)) / 2;
 }
 
+bool ATrackedVechile::PutToSleep()
+{
+	if (SleepMode)
+	{
+		if (SleepDelayTimer < SleepTimerSeconds)
+		{
+			SleepDelayTimer += GetWorld()->DeltaTimeSeconds;
+			return SleepMode;
+		}
+
+	}
+
+	if (Body->GetPhysicsLinearVelocity().Size() < SleepVelocity
+		&& SleepVelocity < Body->GetPhysicsAngularVelocityInDegrees().Size())
+	{
+		if (!SleepMode)
+		{
+			SleepMode = true;
+			TArray<UActorComponent*> Components = GetComponentsByClass(UStaticMeshComponent::StaticClass());
+			for (size_t i = 0; i < Components.Num(); i++)
+			{
+				Cast<UPrimitiveComponent>(Components[i])->PutRigidBodyToSleep();
+				SleepDelayTimer = 0;
+			}
+		}
+	}
+	else
+	{
+		if (SleepMode)
+		{
+			SleepMode = false;
+			SleepDelayTimer = 0;
+		}
+	}
+	return SleepMode;
+}
+
 FVector ATrackedVechile::GetVelocityAtPointWorld(FVector PointLoc)
 {
 	FVector localLinearVelocity = UKismetMathLibrary::InverseTransformDirection(GetActorTransform(), Body->GetPhysicsLinearVelocity());
