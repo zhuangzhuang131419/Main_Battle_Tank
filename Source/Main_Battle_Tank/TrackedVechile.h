@@ -45,57 +45,47 @@ struct FSuspensionSetUp
 	//	this->DampingForce = DampingForce;
 	//}
 };
-//
-//USTRUCT(BlueprintType)
-//struct FSuspensionInternalProcessing
-//{
-//	GENERATED_USTRUCT_BODY()
-//
-//	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-//	FVector RootLoc;
-//	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-//	FRotator RootRot;
-//	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-//	float Length;
-//	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-//	float Radius;
-//	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-//	float Stiffness;
-//	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-//	float Damping;
-//	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-//	float PreviousLength;
-//	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-//	FVector SuspensionForce;
-//	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-//	FVector WheelCollisionLocation;
-//	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-//	FVector WheelCollisionNormal;
-//	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-//	bool Engaged = false;
-//	EPhysicalSurface HitMaterial;
-//
-//	FSuspensionInternalProcessing() {}
-//
-//	FSuspensionInternalProcessing(FVector RootLoc, FRotator RootRot, float Length = 100, float Radius = 100, float Stiffness = 0.5, float Damping = 0.5)
-//	{
-//		this->RootLoc = RootLoc;
-//		this->RootRot = RootRot;
-//		this->Length = Length;
-//		this->Radius = Radius;
-//		this->Stiffness = Stiffness;
-//		this->Damping = Damping;
-//	}
-//};
 
 USTRUCT(BlueprintType)
-struct FMyStruct
+struct FSuspensionInternalProcessingC
 {
 	GENERATED_USTRUCT_BODY()
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 ID;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 male;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	FVector RootLoc;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	FRotator RootRot;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float Length;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float Radius;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float Stiffness;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float Damping;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float PreviousLength;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	FVector SuspensionForce;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	FVector WheelCollisionLocation;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	FVector WheelCollisionNormal;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	bool Engaged = false;
+	EPhysicalSurface HitMaterial;
+
+	FSuspensionInternalProcessingC() {}
+
+	FSuspensionInternalProcessingC(FVector RootLoc, FRotator RootRot, float Length = 100, float Radius = 100, float Stiffness = 0.5, float Damping = 0.5)
+	{
+		this->RootLoc = RootLoc;
+		this->RootRot = RootRot;
+		this->Length = Length;
+		this->Radius = Radius;
+		this->Stiffness = Stiffness;
+		this->Damping = Damping;
+	}
 };
 
 UCLASS()
@@ -171,9 +161,6 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	bool ReverseGear;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Physics")
-	FMyStruct my;
-
 	UPROPERTY(BlueprintReadWrite, Category = "Physics")
 	float MomentInertia;
 	UPROPERTY(BlueprintReadWrite, Category = "Physics")
@@ -239,10 +226,10 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "Physics")
 	float BrakeRatio;
 
-	//UPROPERTY(BlueprintReadWrite, Category = "Physics")
-	//TArray<FSuspensionInternalProcessing> SuspensionsInternalRight;
-	//UPROPERTY(BlueprintReadWrite, Category = "Physics")
-	//TArray<FSuspensionInternalProcessing> SuspensionsInternalLeft;
+	UPROPERTY(BlueprintReadWrite, Category = "Physics")
+	TArray<FSuspensionInternalProcessingC> SuspensionsInternalRight;
+	UPROPERTY(BlueprintReadWrite, Category = "Physics")
+	TArray<FSuspensionInternalProcessingC> SuspensionsInternalLeft;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
 	float TrackMass_kg = 600;
