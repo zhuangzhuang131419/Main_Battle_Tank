@@ -304,6 +304,76 @@ void ATrackedVechile::CountFrictionContactPoint(TArray<FSuspensionInternalProces
 	}
 }
 
+void ATrackedVechile::ShiftGear(int32 ShiftUpOrDown)
+{
+	int32 min;
+	int32 max;
+
+	if (ReverseGear)
+	{
+		min = 0;
+		max = NeutralGearIndex + 1;
+	}
+	else
+	{
+		min = NeutralGearIndex - 1;
+		max = GearRatios.Num();
+	}
+
+
+	if (AutoGearBox)
+	{
+		CurrentGear = FMath::Clamp<float>(NeutralGearIndex + 1, min, max);
+	}
+	else
+	{
+		CurrentGear = FMath::Clamp<float>(CurrentGear + ShiftUpOrDown, 0, GearRatios.Num());
+		ReverseGear = CurrentGear >= NeutralGearIndex ? false : true;
+	}
+}
+
+void ATrackedVechile::UpdateAutoGearBox()
+{
+	if (Throttle > 0 && AutoGearBox)
+	{
+		float MinTime;
+		float MaxTime;
+		EngineTorqueCurve->GetTimeRange(MinTime, MaxTime);
+		float GearShift = (EngineRPM - MinTime) / (MaxTime - MinTime);
+		if (AxisAngularVelocity > LastAutoGearBoxAxisCheck)
+		{
+			if (GearShift >= GearUpShiftPrc)
+			{
+				if (ReverseGear)
+				{
+					ShiftGear(-1);
+				}
+				else
+				{
+					ShiftGear(1);
+				}
+			}
+		}
+
+		if (AxisAngularVelocity < LastAutoGearBoxAxisCheck)
+		{
+			if (GearShift < GearDownShiftPrc)
+			{
+				if (ReverseGear)
+				{
+					ShiftGear(1);
+				}
+				else
+				{
+					ShiftGear(-1);
+				}
+			}
+		}
+
+		LastAutoGearBoxAxisCheck = AxisAngularVelocity;
+	}
+}
+
 void ATrackedVechile::GetMuFromFrictionEllipse(FVector VelocityDirectionNormalized, FVector ForwardVector, float Mu_X_Static, float Mu_Y_Static, float Mu_X_Kinetic, float Mu_Y_Kinetic, OUT float & Mu_Static, OUT float & Mu_Kinetic)
 {
 	float forwardVelocity = UKismetMathLibrary::Dot_VectorVector(VelocityDirectionNormalized, ForwardVector);

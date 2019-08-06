@@ -168,6 +168,10 @@ public:
 	void CalculateEngineAndUpdateDrive();
 	UFUNCTION(BlueprintCallable)
 	void CountFrictionContactPoint(TArray<FSuspensionInternalProcessingC> SuspSide);
+	UFUNCTION(BlueprintCallable)
+	void ShiftGear(int32 ShiftUpOrDown);
+	UFUNCTION(BlueprintCallable)
+	void UpdateAutoGearBox();
 	void GetMuFromFrictionEllipse(FVector VelocityDirectionNormalized, FVector ForwardVector, float Mu_X_Static, float Mu_Y_Static, float Mu_X_Kinetic, float Mu_Y_Kinetic, OUT float& Mu_Static, OUT float& Mu_Kinetic);
 
 	UPROPERTY(BlueprintReadWrite)
@@ -185,6 +189,8 @@ public:
 	bool SleepMode = false;
 	UPROPERTY(BlueprintReadWrite)
 	float SleepDelayTimer;
+
+	float LastAutoGearBoxAxisCheck;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Physics")
 	int32 TotalNumFrictionPoints;
