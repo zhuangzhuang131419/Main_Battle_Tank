@@ -115,8 +115,10 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void PreCalculateMomentOfInteria();
-
-
+	UFUNCTION(BlueprintCallable)
+	void VisualizeCenterOfMass();
+	UFUNCTION(BlueprintCallable)
+	void FindNeutralGearAndSetStartingGear();
 
 protected:
 	// Called when the game starts or when spawned
@@ -154,13 +156,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void AnimateTreadsInstancedMeshCPlusPlus(USplineComponent* SplineComponent, UInstancedStaticMeshComponent* TreadsMeshComponent);
-
-	UFUNCTION(BlueprintCallable)
-	void AddGravity();
-
 	UFUNCTION(BlueprintCallable)
 	void PositionAndAnimateDriveWheels(UStaticMeshComponent* WheelComponent, FSuspensionInternalProcessingC SuspensionSet, int32 SuspensionIndex, ESide side, bool FlipAnimation180Degrees);
-
 	float GetEngineTorque(float RevolutionPerMinute);
 	float GetGearBoxTorque(float EngineTorque);
 	float GetEngineRPMFromAxls(float AxlsAngularVelocity);

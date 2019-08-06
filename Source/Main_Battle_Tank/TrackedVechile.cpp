@@ -21,6 +21,26 @@ void ATrackedVechile::PreCalculateMomentOfInteria()
 	UE_LOG(LogTemp, Warning, TEXT("The MomentInertia of sprocket is %f"), MomentInertia);
 }
 
+void ATrackedVechile::VisualizeCenterOfMass()
+{
+	COM->SetWorldLocation(Body->GetCenterOfMass());
+}
+
+void ATrackedVechile::FindNeutralGearAndSetStartingGear()
+{
+	for (size_t i = 0; i < GearRatios.Num(); i++)
+	{
+		if (GearRatios[i] == 0)
+		{
+			NeutralGearIndex = i;
+			break;
+		}
+	}
+
+	// We start in first gear in Automatic Gear Box
+	CurrentGear = AutoGearBox ? NeutralGearIndex + 1 : NeutralGearIndex;
+}
+
 // Called when the game starts or when spawned
 void ATrackedVechile::BeginPlay()
 {
@@ -209,11 +229,6 @@ void ATrackedVechile::BuildTrackSplineCPlusPlus(USplineComponent * SplineCompone
 void ATrackedVechile::AnimateTreadsInstancedMeshCPlusPlus(USplineComponent * SplineComponent, UInstancedStaticMeshComponent * TreadsMeshComponent)
 {
 
-}
-
-void ATrackedVechile::AddGravity()
-{
-	Body->AddForce(Body->GetMass() * FVector(0, 0, -980));
 }
 
 void ATrackedVechile::PositionAndAnimateDriveWheels(UStaticMeshComponent * WheelComponent, FSuspensionInternalProcessingC SuspensionSet, int32 SuspensionIndex, ESide side, bool FlipAnimation180Degrees)
