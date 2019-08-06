@@ -383,5 +383,93 @@ void ATrackedVechile::GetMuFromFrictionEllipse(FVector VelocityDirectionNormaliz
 		UKismetMathLibrary::Sqrt(1 - forwardVelocity * forwardVelocity) * Mu_Y_Kinetic).Size();
 }
 
+void ATrackedVechile::GetThrottleInputForAutoHandling(float InputVehicleLeftRight, float InputVehicleForwardBackward)
+{
+	AxisInputValue = InputVehicleForwardBackward;
+	FVector localVelocity = UKismetMathLibrary::InverseTransformDirection(GetActorTransform(), GetVelocity());
+	if (AxisInputValue != 0)
+	{
+		if (localVelocity.Size() > 10) // Are we moving?
+		{
+			if (AxisInputValue > 0) // Is forward pressed?
+			{
+				if (localVelocity.X > 0) // We are moving forward with forward pressed
+				{
+					// Forward
+					Forward();
+				}
+				else
+				{
+					// Brake
+					Brake();
+				}
+			}
+			else
+			{
+				if (localVelocity.X > 0) // We are moving forward with backwards pressed
+				{
+					// Brake
+					Brake();
+				}
+				else
+				{
+					// Backwards
+					Backward();
+				}
+			}
+		}
+		else
+		{
+			if (AxisInputValue > 0) // Not moving yet but forward/backward is pressed
+			{
+				// Forward
+				Forward();
+			}
+			else
+			{
+				Backward();
+			}
+		}
+	}
+	else
+	{
+		// Forward/backward is not pressed, no throttle but maybe we are steering
+		if (InputVehicleLeftRight != 0 && localVelocity.Size() > 10)
+		{
+			// We are steering without throttle and not rolling
+			Forward();
+		}
+		else
+		{
+			UpdateCoefficient();
+		}
+	}
+}
+
+void ATrackedVechile::Forward()
+{
+	ReverseGear = false;
+	ShiftGear(0);
+	UpdateCoefficient();
+}
+
+void ATrackedVechile::Brake()
+{
+	BrakeRatio = UKismetMathLibrary::Abs(AxisInputValue);
+	WheelForwardCoefficient = 0;
+}
+
+void ATrackedVechile::Backward()
+{
+	ReverseGear = true;
+	ShiftGear(0);
+	UpdateCoefficient();
+}
+
+void ATrackedVechile::UpdateCoefficient()
+{
+	BrakeRatio = 0;
+	WheelForwardCoefficient = UKismetMathLibrary::Abs(AxisInputValue);
+}
 
 
