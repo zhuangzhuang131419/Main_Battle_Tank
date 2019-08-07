@@ -158,9 +158,7 @@ public:
 	void AnimateTreadsInstancedMeshCPlusPlus(USplineComponent* SplineComponent, UInstancedStaticMeshComponent* TreadsMeshComponent);
 	UFUNCTION(BlueprintCallable)
 	void PositionAndAnimateDriveWheels(UStaticMeshComponent* WheelComponent, FSuspensionInternalProcessingC SuspensionSet, int32 SuspensionIndex, ESide side, bool FlipAnimation180Degrees);
-	float GetEngineTorque(float RevolutionPerMinute);
-	float GetGearBoxTorque(float EngineTorque);
-	float GetEngineRPMFromAxls(float AxlsAngularVelocity);
+	
 	UFUNCTION(BlueprintCallable)
 	void CalculateEngineAndUpdateDrive();
 	UFUNCTION(BlueprintCallable)
@@ -181,8 +179,7 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	int32 CurrentGear;
 
-	UPROPERTY(BlueprintReadWrite)
-	float EngineRPM;
+	
 	UPROPERTY(BlueprintReadWrite)
 	bool ReverseGear;
 	UPROPERTY(BlueprintReadWrite)
@@ -190,7 +187,7 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	float SleepDelayTimer;
 
-	float LastAutoGearBoxAxisCheck;
+	
 
 	UPROPERTY(BlueprintReadWrite, Category = "Physics")
 	int32 TotalNumFrictionPoints;
@@ -211,8 +208,10 @@ public:
 	// Torque
 	UPROPERTY(BlueprintReadWrite, Category = "Physics")
 	float EngineTorque;
+	// 调整Axls分配给右履带的权重
 	UPROPERTY(BlueprintReadWrite, Category = "Physics")
 	float TrackTorqueTransferRight;
+	// 调整Axls分配给左履带的权重
 	UPROPERTY(BlueprintReadWrite, Category = "Physics")
 	float TrackTorqueTransferLeft;
 	UPROPERTY(BlueprintReadWrite, Category = "Physics")
@@ -267,28 +266,14 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
 	float TrackMass_kg = 600;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
 	float SproketMass_kg = 65;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
-	float AirDensity = 1.2922;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
-	float DragSurfaceArea = 10;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
-	float DragCoefficient = 0.8;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
 	float SproketRadius_cm = 24;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
 	float DifferentialRatio = 3.5;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
 	float TransmissionEfficiency = 0.9;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
 	float Mu_X_Static = 1;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
@@ -297,49 +282,34 @@ public:
 	float Mu_X_Kinetic = 0.5;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
 	float Mu_Y_Kinetic = 0.45;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
 	float RollingFrictionCoefficient = 0.02;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
 	float BrakeForce = 30;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
 	float TreadLength = 972.5;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
 	float TreadUVTiles = 32.5;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
 	float TreadsOnSide = 64;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
 	float TreadHalfThickness = 2;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
 	float SleepVelocity = 5;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
 	float SleepTimerSeconds = 2;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
 	bool AutoGearBox = true;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
 	float GearUpShiftPrc = 0.9;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
 	float GearDownShiftPrc = 0.05;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
 	float EngineExtraPowerRatio = 3;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
 	UCurveFloat* EngineTorqueCurve;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
 	TArray<float> GearRatios = { 4.35, 0, 3.81, 1.93, 1 };
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
 	TArray<FSuspensionSetUp> SuspensionSetUpRight;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
@@ -356,12 +326,19 @@ private:
 	UStaticMeshComponent* Turrent;
 	USkeletalMeshComponent* Cannon;
 
+	float GetEngineTorque(float RevolutionPerMinute);
+	float GetGearBoxTorque(float EngineTorque);
+	float GetEngineRPMFromAxls(float AxlsAngularVelocity);
+
 	void Forward();
 	void Brake();
 	void Backward();
 	void UpdateCoefficient();
 
 	float AxisInputValue;
+	float EngineRPM;
+
+	float LastAutoGearBoxAxisCheck;
 
 
 };

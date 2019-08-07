@@ -87,6 +87,22 @@ void UTankAimingComponent::AimAt(FVector HitLocation)
 	}
 }
 
+void UTankAimingComponent::Fire()
+{
+	// Spawn a projectile at the socket location
+	if (!ensure(Cannon)) { return; }
+	if (!ensure(ProjectileBlueprint)) { return; }
+	auto Projectile = GetWorld()->SpawnActor<AProjectile>(
+		ProjectileBlueprint,
+		Cannon->GetSocketLocation(FName("Muzzle")),
+		Cannon->GetSocketRotation(FName("Muzzle"))
+		);
+
+	Projectile->LaunchProjectile(LaunchSpeed);
+	// LastFireTime = FPlatformTime::Seconds();
+	// RoundsLeft--;
+}
+
 void UTankAimingComponent::ElevateCannon(float RelativeSpeed)
 {
 	RelativeSpeed = FMath::Clamp<float>(RelativeSpeed, -1, +1);

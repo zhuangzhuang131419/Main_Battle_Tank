@@ -156,6 +156,8 @@ FVector ATrackedVechile::GetVelocityAtPointWorld(FVector PointLoc)
 
 float ATrackedVechile::ApplyBrake(float AngularVelocity, float BrakeRatio)
 {
+	// 刚体定轴转动
+
 	float BrakeImpulse = GetWorld()->DeltaTimeSeconds * BrakeForce * BrakeRatio;
 
 	if (UKismetMathLibrary::Abs(AngularVelocity) > UKismetMathLibrary::Abs(BrakeImpulse))
@@ -282,6 +284,7 @@ float ATrackedVechile::GetEngineTorque(float RevolutionPerMinute)
 
 float ATrackedVechile::GetGearBoxTorque(float EngineTorque)
 {
+	// 变速器
 	float GearBoxTorque = GearRatios[CurrentGear] * DifferentialRatio * TransmissionEfficiency * EngineTorque * EngineExtraPowerRatio;
 	return ReverseGear ? -GearBoxTorque : GearBoxTorque;
 }
@@ -290,13 +293,15 @@ float ATrackedVechile::GetEngineRPMFromAxls(float AxlsAngularVelocity)
 {
 	/// 物理知识
 	// w(角速度) = 2 * PI * n（转速）
-	return (AxlsAngularVelocity * GearRatios[CurrentGear] * DifferentialRatio * 60) / UKismetMathLibrary::GetPI() / 2;
+	return (AxlsAngularVelocity * GearRatios[CurrentGear] * DifferentialRatio * 60/*second to minute*/) / UKismetMathLibrary::GetPI() / 2;
 }
 
 void ATrackedVechile::CalculateEngineAndUpdateDrive()
 {
 	float maxEngineTorque = GetEngineTorque(GetEngineRPMFromAxls(AxisAngularVelocity));
 	EngineTorque = maxEngineTorque * Throttle;
+
+	// 引擎torque有损耗
 	DriveAxlsTorque = GetGearBoxTorque(EngineTorque);
 
 	DriveRightTorque = TrackTorqueTransferRight * DriveAxlsTorque;
@@ -391,6 +396,7 @@ void ATrackedVechile::UpdateAutoGearBox()
 
 void ATrackedVechile::GetMuFromFrictionEllipse(FVector VelocityDirectionNormalized, FVector ForwardVector, float Mu_X_Static, float Mu_Y_Static, float Mu_X_Kinetic, float Mu_Y_Kinetic, OUT float & Mu_Static, OUT float & Mu_Kinetic)
 {
+	// 计算合成的摩擦力，在椭圆内计算
 	float forwardVelocity = UKismetMathLibrary::Dot_VectorVector(VelocityDirectionNormalized, ForwardVector);
 	Mu_Static = FVector2D(Mu_X_Static * forwardVelocity,
 		UKismetMathLibrary::Sqrt(1 - forwardVelocity * forwardVelocity) * Mu_Y_Static).Size();
