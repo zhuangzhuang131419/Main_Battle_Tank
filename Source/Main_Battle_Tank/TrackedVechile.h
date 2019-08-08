@@ -150,9 +150,17 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void AnimateSprocketOrIdler(UStaticMeshComponent* SprocketOrIdlerComponnet, float TrackAngularVelocity, bool FlipAnimation180Degrees);
-	
+	UFUNCTION(BlueprintCallable)
+	void AnimateTreadsSplineControlPoints(UStaticMeshComponent* WheelMeshComponent, USplineComponent* TreadSplineComponent, TArray<FVector> SplineCoordinates, TArray<FSuspensionSetUp> SuspensionSetUp, int32 SuspensionIndex);
+	UFUNCTION(BlueprintCallable)
+	void AnimateTreadsMaterial();
+	UFUNCTION(BlueprintCallable)
+	void AnimateTreadsInstancedMesh(USplineComponent* RightSpline, USplineComponent* LeftSpline, UInstancedStaticMeshComponent* TreadsRight, UInstancedStaticMeshComponent* ThreadsLeft);
+
 	UFUNCTION(BlueprintCallable)
 	void BuildTrackSplineCPlusPlus(USplineComponent * SplineComponent, UInstancedStaticMeshComponent * TreadsMeshComponent, TArray<FVector> SplineCoordinates, TArray<FVector> SplineTangents, float TreadsOnSide);
+
+
 
 	UFUNCTION(BlueprintCallable)
 	void AnimateTreadsInstancedMeshCPlusPlus(USplineComponent* SplineComponent, UInstancedStaticMeshComponent* TreadsMeshComponent);
@@ -187,7 +195,10 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	float SleepDelayTimer;
 
-	
+	UPROPERTY(BlueprintReadWrite, Category = "Material")
+	UMaterialInstanceDynamic* TreadMaterialRight;
+	UPROPERTY(BlueprintReadWrite, Category = "Material")
+	UMaterialInstanceDynamic* TreadMaterialLeft;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Physics")
 	int32 TotalNumFrictionPoints;
@@ -316,6 +327,7 @@ public:
 	TArray<FSuspensionSetUp> SuspensionSetUpLeft;
 
 	
+	UStaticMeshComponent* GetBody() { return Body; }
 
 private:
 	UStaticMeshComponent* Body;
@@ -339,6 +351,11 @@ private:
 	float EngineRPM;
 
 	float LastAutoGearBoxAxisCheck;
+
+	float TreadUVOffsetRight;
+	float TreadUVOffsetLeft;
+	float TreadMeshOffsetRight;
+	float TreadMeshOffsetLeft;
 
 
 };

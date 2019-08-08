@@ -28,7 +28,7 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UFUNCTION(BlueprintCallable, Category = "SetUp")
-	void Initialise(USkeletalMeshComponent* CannonToSet, UStaticMeshComponent* TurretToSet);
+	void Initialise(USkeletalMeshComponent* CannonToSet, UStaticMeshComponent* TurretToSet, TSubclassOf<AProjectile> ProjectileToSet, UAnimationAsset* ConnonAnimationToSet);
 
 	void AimAt(FVector HitLocation);
 
@@ -38,11 +38,14 @@ public:
 private:
 	USkeletalMeshComponent* Cannon;
 	UStaticMeshComponent* Turret;
+	UAnimationAsset* CannonRecoil;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Firing")
 	float LaunchSpeed = 8000;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Setup")
+
+
+	// UPROPERTY(EditDefaultsOnly, Category = "Setup")
 	TSubclassOf<AProjectile> ProjectileBlueprint;
 
 	void MoveCannonTowards(FVector AimDirection);

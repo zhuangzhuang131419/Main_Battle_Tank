@@ -5,6 +5,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
+#include "TrackedVechile.h"
 
 // Sets default values for this component's properties
 UTankAimingComponent::UTankAimingComponent()
@@ -35,12 +36,6 @@ void UTankAimingComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 	// ...
 }
 
-void UTankAimingComponent::Initialise(USkeletalMeshComponent * CannonToSet, UStaticMeshComponent * TurretToSet)
-{
-	Cannon = CannonToSet;
-	Turret = TurretToSet;
-}
-
 void UTankAimingComponent::MoveCannonTowards(FVector AimDirection)
 {
 	if (ensure(Cannon) && ensure(Turret))
@@ -48,7 +43,7 @@ void UTankAimingComponent::MoveCannonTowards(FVector AimDirection)
 
 		auto DeltaRotator = AimDirection.Rotation() - Cannon->GetForwardVector().Rotation();
 
-		UE_LOG(LogTemp, Warning, TEXT("AimDirectionAsRotator: %s"), *AimDirection.Rotation().ToString());
+		// UE_LOG(LogTemp, Warning, TEXT("AimDirectionAsRotator: %s"), *AimDirection.Rotation().ToString());
 
 		// Turret->SetRelativeRotation(FRotator(0, 180 + AimDirection.Rotation().Yaw, 0));
 		// UE_LOG(LogTemp, Warning, TEXT("AimDirectionAsRotator: Yaw: %f, Cannon: Yaw: %f"), AimDirection.Rotation().Yaw, Cannon->GetRelativeTransform().GetRotation().Z);
@@ -62,6 +57,14 @@ void UTankAimingComponent::MoveCannonTowards(FVector AimDirection)
 			RotateTurret(-DeltaRotator.Yaw);
 		}
 	}
+}
+
+void UTankAimingComponent::Initialise(USkeletalMeshComponent * CannonToSet, UStaticMeshComponent * TurretToSet, TSubclassOf<AProjectile> ProjectileToSet, UAnimationAsset * ConnonAnimationToSet)
+{
+	Cannon = CannonToSet;
+	Turret = TurretToSet;
+	ProjectileBlueprint = ProjectileToSet;
+	CannonRecoil = ConnonAnimationToSet;
 }
 
 void UTankAimingComponent::AimAt(FVector HitLocation)
@@ -101,6 +104,24 @@ void UTankAimingComponent::Fire()
 	Projectile->LaunchProjectile(LaunchSpeed);
 	// LastFireTime = FPlatformTime::Seconds();
 	// RoundsLeft--;
+	
+	// 施加后坐力
+	if (ensure(CannonRecoil))
+	{
+		Cannon->PlayAnimation(CannonRecoil, false);
+	}
+	
+	/*ATrackedVechile* targetVehicle = Cast<ATrackedVechile>(GetOwner());
+	if (ensure(targetVehicle))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Recoil"))
+		UStaticMeshComponent* targetBody = targetVehicle->GetBody();
+		FVector worldCannonLocation = UKismetMathLibrary::TransformLocation(targetVehicle->GetActorTransform(), Cannon->GetRelativeTransform().GetLocation());
+		FVector ConnonDirection = (worldCannonLocation - Cannon->GetSocketLocation(FName("Muzzle"))).GetSafeNormal();
+		targetBody->AddImpulseAtLocation(ConnonDirection * RecoilImpulse, targetBody->GetCenterOfMass());
+	}*/
+	
+	
 }
 
 void UTankAimingComponent::ElevateCannon(float RelativeSpeed)
