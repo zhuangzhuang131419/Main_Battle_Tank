@@ -138,7 +138,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void UpdateAxlsVelocity();
 
-	
+	UFUNCTION(BlueprintCallable)
+	void CheckWheelCollision(int32 SuspIndex, TArray<FSuspensionInternalProcessing> SuspensionArray, ESide Side);
 	UFUNCTION(BlueprintCallable)
 	bool PutToSleep();
 	// local
@@ -353,6 +354,8 @@ private:
 	void Brake();
 	void Backward();
 	void UpdateCoefficient();
+	FVector AddSuspensionForce(float SuspensionLength, float SuspensionNewLength, float SuspensionPreviousLength, float SuspensionStiffness, float SuspensionDamping, FVector SuspensionWorldZ, FVector SuspensionWorldLocation);
+	void PushSuspesionToEnvironment(UPrimitiveComponent* CollisionPrimitive, FVector SuspensionForce, FVector WheelCollisionLocation);
 
 	float AxisInputValue;
 	float EngineRPM;

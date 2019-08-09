@@ -106,6 +106,71 @@ void ATrackedVechile::UpdateAxlsVelocity()
 	AxisAngularVelocity = (UKismetMathLibrary::Abs(TrackRightAngularVelocity) + UKismetMathLibrary::Abs(TrackLeftAngularVelocity)) / 2;
 }
 
+void ATrackedVechile::CheckWheelCollision(int32 SuspIndex, TArray<FSuspensionInternalProcessing> SuspensionArray, ESide Side)
+{
+	auto SuspensionLength = SuspensionArray[SuspIndex].Length;
+	auto SuspensionStiffness = SuspensionArray[SuspIndex].Stiffness;
+	auto SuspensionDamping = SuspensionArray[SuspIndex].Damping;
+	auto SuspensionPreviousLength = SuspensionArray[SuspIndex].PreviousLength;
+
+	// 转换成世界坐标
+	auto SuspensionWorldX = UKismetMathLibrary::TransformDirection(GetActorTransform(), UKismetMathLibrary::GetForwardVector(SuspensionArray[SuspIndex].RootRot));
+	auto SuspensionWorldY = UKismetMathLibrary::TransformDirection(GetActorTransform(), UKismetMathLibrary::GetRightVector(SuspensionArray[SuspIndex].RootRot));
+	auto SuspensionWorldZ = UKismetMathLibrary::TransformDirection(GetActorTransform(), UKismetMathLibrary::GetUpVector(SuspensionArray[SuspIndex].RootRot));
+	auto SuspensionWorldLocation = UKismetMathLibrary::TransformLocation(GetActorTransform(), SuspensionArray[SuspIndex].RootLoc);
+
+	FVector Location;
+	FVector ImpactPoint;
+	FVector ImpactNormal;
+	bool bBlockingHit;
+	UPrimitiveComponent* Component = nullptr;
+
+	TraceForSuspension(
+		SuspensionWorldLocation,
+		SuspensionWorldLocation - SuspensionWorldZ * SuspensionLength,
+		SuspensionArray[SuspIndex].Radius,
+		bBlockingHit,
+		Location,
+		ImpactPoint,
+		ImpactNormal,
+		Component
+	);
+
+	FVector SuspensionForce;
+	if (bBlockingHit)
+	{
+		//UE_LOG(LogTemp, Warning, TEXT("Start: %s, End: %s, Location: %s")
+		//	, *SuspensionWorldLocation.ToString()
+		//	, *(SuspensionWorldLocation - SuspensionWorldZ * SuspensionLength).ToString()
+		//	, *Location.ToString());
+		auto SuspensionNewLength = (SuspensionWorldLocation - Location).Size();
+
+		SuspensionForce = AddSuspensionForce(
+			SuspensionLength, 
+			SuspensionNewLength, 
+			SuspensionPreviousLength, 
+			SuspensionStiffness, 
+			SuspensionDamping, 
+			SuspensionWorldZ, 
+			SuspensionWorldLocation);
+
+		SuspensionArray[SuspIndex].PreviousLength = SuspensionNewLength;
+		SuspensionArray[SuspIndex].SuspensionForce = SuspensionForce;
+		SuspensionArray[SuspIndex].WheelCollisionLocation = Location;
+		SuspensionArray[SuspIndex].WheelCollisionNormal = ImpactNormal;
+		SuspensionArray[SuspIndex].Engaged = true;
+	}
+	else
+	{
+		SuspensionArray[SuspIndex].PreviousLength = SuspensionLength;
+		SuspensionArray[SuspIndex].SuspensionForce = FVector();
+		SuspensionArray[SuspIndex].WheelCollisionLocation = FVector();
+		SuspensionArray[SuspIndex].WheelCollisionNormal = FVector();
+		SuspensionArray[SuspIndex].Engaged = false;
+	}
+	PushSuspesionToEnvironment(Component, SuspensionForce, Location);
+}
+
 bool ATrackedVechile::PutToSleep()
 {
 	if (SleepMode)
@@ -603,6 +668,25 @@ void ATrackedVechile::UpdateCoefficient()
 {
 	BrakeRatio = 0;
 	WheelForwardCoefficient = UKismetMathLibrary::Abs(AxisInputValue);
+}
+
+FVector ATrackedVechile::AddSuspensionForce(float SuspensionLength, float SuspensionNewLength, float SuspensionPreviousLength, float SuspensionStiffness, float SuspensionDamping, FVector SuspensionWorldZ, FVector SuspensionWorldLocation)
+{
+	float SpringCompressionRatio = (SuspensionLength - SuspensionNewLength) / SuspensionLength;
+	float SuspensionVelocity = (SuspensionNewLength - SuspensionPreviousLength) / GetWorld()->DeltaTimeSeconds;
+	// 物理知识
+	// F（阻尼力） = -c（阻尼系数）* v（振子运动速度）
+	auto SuspensionForce = (FMath::Clamp<float>(SpringCompressionRatio, 0, 1) * SuspensionStiffness - SuspensionDamping *  SuspensionVelocity) * SuspensionWorldZ;
+	Body->AddForceAtLocation(SuspensionForce, SuspensionWorldLocation);
+	return SuspensionForce;
+}
+
+void ATrackedVechile::PushSuspesionToEnvironment(UPrimitiveComponent* CollisionPrimitive, FVector SuspensionForce, FVector WheelCollisionLocation)
+{
+	if (ensure(CollisionPrimitive) && CollisionPrimitive->IsSimulatingPhysics())
+	{
+		CollisionPrimitive->AddForceAtLocation(-SuspensionForce, WheelCollisionLocation);
+	}
 }
 
 
