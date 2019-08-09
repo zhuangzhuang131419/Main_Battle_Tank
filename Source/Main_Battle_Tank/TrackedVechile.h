@@ -154,16 +154,14 @@ public:
 	void AnimateTreadsSplineControlPoints(UStaticMeshComponent* WheelMeshComponent, USplineComponent* TreadSplineComponent, TArray<FVector> SplineCoordinates, TArray<FSuspensionSetUp> SuspensionSetUp, int32 SuspensionIndex);
 	UFUNCTION(BlueprintCallable)
 	void AnimateTreadsMaterial();
-	// UFUNCTION(BlueprintCallable)
-	// void AnimateTreadsInstancedMesh(USplineComponent* RightSpline, USplineComponent* LeftSpline, UInstancedStaticMeshComponent* TreadsRight, UInstancedStaticMeshComponent* ThreadsLeft);
+
+	void UpdateTreadRelatedToVelocity(USplineComponent * RightSpline, UInstancedStaticMeshComponent * TreadsRight, float LinearVelocity, float& TreadMeshOffset);
+	UFUNCTION(BlueprintCallable)
+	void AnimateTreadsInstancedMeshCPlusPlus(USplineComponent* Spline, UInstancedStaticMeshComponent* IntancedTread, ESide side);
 
 	UFUNCTION(BlueprintCallable)
 	void BuildTrackSplineCPlusPlus(USplineComponent * SplineComponent, UInstancedStaticMeshComponent * TreadsMeshComponent, TArray<FVector> SplineCoordinates, TArray<FVector> SplineTangents, float TreadsOnSide);
 
-
-
-	UFUNCTION(BlueprintCallable)
-	void AnimateTreadsInstancedMeshCPlusPlus(USplineComponent* SplineComponent, UInstancedStaticMeshComponent* TreadsMeshComponent);
 	UFUNCTION(BlueprintCallable)
 	void PositionAndAnimateDriveWheels(UStaticMeshComponent* WheelComponent, FSuspensionInternalProcessingC SuspensionSet, int32 SuspensionIndex, ESide side, bool FlipAnimation180Degrees);
 	
@@ -199,6 +197,11 @@ public:
 	UMaterialInstanceDynamic* TreadMaterialRight;
 	UPROPERTY(BlueprintReadWrite, Category = "Material")
 	UMaterialInstanceDynamic* TreadMaterialLeft;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Tread")
+	float TreadMeshOffsetRight;
+	UPROPERTY(BlueprintReadWrite, Category = "Tread")
+	float TreadMeshOffsetLeft;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Physics")
 	int32 TotalNumFrictionPoints;
@@ -269,6 +272,8 @@ public:
 	//
 	UPROPERTY(BlueprintReadWrite, Category = "Physics")
 	float BrakeRatio;
+
+
 
 	UPROPERTY(BlueprintReadWrite, Category = "Physics")
 	TArray<FSuspensionInternalProcessingC> SuspensionsInternalRight;
@@ -354,8 +359,7 @@ private:
 
 	float TreadUVOffsetRight;
 	float TreadUVOffsetLeft;
-	float TreadMeshOffsetRight;
-	float TreadMeshOffsetLeft;
 
 
+	
 };

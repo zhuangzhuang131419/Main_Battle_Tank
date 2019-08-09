@@ -225,6 +225,45 @@ void ATrackedVechile::AnimateTreadsMaterial()
 		TreadMaterialLeft->SetScalarParameterValue(FName("UVOffset"), TreadUVOffsetLeft);
 	}
 }
+
+void ATrackedVechile::UpdateTreadRelatedToVelocity(USplineComponent * RightSpline, UInstancedStaticMeshComponent * TreadsRight, float LinearVelocity, float& TreadMeshOffset)
+{
+	if (ensure(RightSpline) && ensure(TreadsRight))
+	{
+		float SplineLength = RightSpline->GetSplineLength();
+		TreadMeshOffset = FMath::Fmod(LinearVelocity * GetWorld()->DeltaTimeSeconds + TreadMeshOffset, SplineLength);
+		for (size_t i = 0; i <= TreadsLastIndexCPlusPlus; i++)
+		{
+			float TreadOffset = (RightSpline->GetSplineLength() / TreadsOnSide) * i + TreadMeshOffset;
+			float distance = FMath::Fmod(TreadOffset, SplineLength);
+			if (distance < 0)
+			{
+				distance = FMath::Fmod(TreadOffset, SplineLength) + SplineLength;
+			}
+			FVector location = RightSpline->GetLocationAtDistanceAlongSpline(distance, ESplineCoordinateSpace::Local);
+			FRotator rotation = RightSpline->GetRotationAtDistanceAlongSpline(distance, ESplineCoordinateSpace::Local);
+			FVector right = RightSpline->GetRightVectorAtDistanceAlongSpline(distance, ESplineCoordinateSpace::Local);
+
+			if (right.Y < 0)
+			{
+				rotation.Roll = 180;
+			}
+
+			TreadsRight->UpdateInstanceTransform(
+				i,
+				UKismetMathLibrary::MakeTransform(
+					location,
+					rotation,
+					FVector(1, 1, 1)
+				),
+				false,
+				i == TreadsLastIndexCPlusPlus,
+				false
+			);
+		}
+	}
+}
+
 //
 //void ATrackedVechile::AnimateTreadsInstancedMesh(USplineComponent * RightSpline, USplineComponent * LeftSpline, UInstancedStaticMeshComponent * TreadsRight, UInstancedStaticMeshComponent * TreadsLeft)
 //{
@@ -361,9 +400,20 @@ void ATrackedVechile::BuildTrackSplineCPlusPlus(USplineComponent * SplineCompone
 	}
 }
 
-void ATrackedVechile::AnimateTreadsInstancedMeshCPlusPlus(USplineComponent * SplineComponent, UInstancedStaticMeshComponent * TreadsMeshComponent)
+void ATrackedVechile::AnimateTreadsInstancedMeshCPlusPlus(USplineComponent * SplineComponent, UInstancedStaticMeshComponent * TreadsMeshComponent, ESide side)
 {
-
+	switch (side)
+	{
+	case ESide::Left:
+		UpdateTreadRelatedToVelocity(SplineComponent, TreadsMeshComponent, TrackLeftLinearVelocity, TreadMeshOffsetLeft);
+		break;
+	case ESide::Right:
+		UpdateTreadRelatedToVelocity(SplineComponent, TreadsMeshComponent, TrackRightLinearVelocity, TreadMeshOffsetRight);
+		break;
+	default:
+		break;
+	}
+	
 }
 
 void ATrackedVechile::PositionAndAnimateDriveWheels(UStaticMeshComponent * WheelComponent, FSuspensionInternalProcessingC SuspensionSet, int32 SuspensionIndex, ESide side, bool FlipAnimation180Degrees)
