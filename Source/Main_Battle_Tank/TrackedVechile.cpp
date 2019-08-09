@@ -323,7 +323,7 @@ void ATrackedVechile::AnimateTreadsInstancedMeshCPlusPlus(USplineComponent * Spl
 	
 }
 
-void ATrackedVechile::PositionAndAnimateDriveWheels(UStaticMeshComponent * WheelComponent, FSuspensionInternalProcessingC SuspensionSet, int32 SuspensionIndex, ESide side, bool FlipAnimation180Degrees)
+void ATrackedVechile::PositionAndAnimateDriveWheels(UStaticMeshComponent * WheelComponent, FSuspensionInternalProcessing SuspensionSet, int32 SuspensionIndex, ESide side, bool FlipAnimation180Degrees)
 {
 	// ÉèÖÃÂÖÌ¥Î»ÖÃ
 	WheelComponent->SetWorldLocation(
@@ -424,7 +424,7 @@ void ATrackedVechile::CalculateEngineAndUpdateDrive()
 	DriveLeftForce = GetActorForwardVector() * DriveLeftTorque / SproketRadius_cm;
 }
 
-void ATrackedVechile::CountFrictionContactPoint(TArray<FSuspensionInternalProcessingC> SuspSide)
+void ATrackedVechile::CountFrictionContactPoint(TArray<FSuspensionInternalProcessing> SuspSide)
 {
 	for (size_t i = 0; i < SuspSide.Num(); i++)
 	{

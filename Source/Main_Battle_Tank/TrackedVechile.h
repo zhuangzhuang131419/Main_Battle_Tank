@@ -54,7 +54,7 @@ struct FSuspensionSetUp
 };
 
 USTRUCT(BlueprintType)
-struct FSuspensionInternalProcessingC
+struct FSuspensionInternalProcessing
 {
 	GENERATED_USTRUCT_BODY()
 
@@ -82,9 +82,9 @@ struct FSuspensionInternalProcessingC
 	bool Engaged = false;
 	EPhysicalSurface HitMaterial;
 
-	FSuspensionInternalProcessingC() {}
+	FSuspensionInternalProcessing() {}
 
-	FSuspensionInternalProcessingC(FVector RootLoc, FRotator RootRot, float Length = 100, float Radius = 100, float Stiffness = 0.5, float Damping = 0.5)
+	FSuspensionInternalProcessing(FVector RootLoc, FRotator RootRot, float Length = 100, float Radius = 100, float Stiffness = 0.5, float Damping = 0.5)
 	{
 		this->RootLoc = RootLoc;
 		this->RootRot = RootRot;
@@ -163,14 +163,14 @@ public:
 	void BuildTrackSplineCPlusPlus(USplineComponent * SplineComponent, UInstancedStaticMeshComponent * TreadsMeshComponent, TArray<FVector> SplineCoordinates, TArray<FVector> SplineTangents, float TreadsOnSide);
 
 	UFUNCTION(BlueprintCallable)
-	void PositionAndAnimateDriveWheels(UStaticMeshComponent* WheelComponent, FSuspensionInternalProcessingC SuspensionSet, int32 SuspensionIndex, ESide side, bool FlipAnimation180Degrees);
+	void PositionAndAnimateDriveWheels(UStaticMeshComponent* WheelComponent, FSuspensionInternalProcessing SuspensionSet, int32 SuspensionIndex, ESide side, bool FlipAnimation180Degrees);
 	UFUNCTION(BlueprintCallable)
 	void TraceForSuspension(FVector Start, FVector End, float Radius, bool & BlockingHit, FVector & Location, FVector & ImpactPoint, FVector & ImpactNormal, UPrimitiveComponent *& Component);
 
 	UFUNCTION(BlueprintCallable)
 	void CalculateEngineAndUpdateDrive();
 	UFUNCTION(BlueprintCallable)
-	void CountFrictionContactPoint(TArray<FSuspensionInternalProcessingC> SuspSide);
+	void CountFrictionContactPoint(TArray<FSuspensionInternalProcessing> SuspSide);
 	UFUNCTION(BlueprintCallable)
 	void ShiftGear(int32 ShiftUpOrDown);
 	UFUNCTION(BlueprintCallable)
@@ -278,9 +278,9 @@ public:
 
 
 	UPROPERTY(BlueprintReadWrite, Category = "Physics")
-	TArray<FSuspensionInternalProcessingC> SuspensionsInternalRight;
+	TArray<FSuspensionInternalProcessing> SuspensionsInternalRight;
 	UPROPERTY(BlueprintReadWrite, Category = "Physics")
-	TArray<FSuspensionInternalProcessingC> SuspensionsInternalLeft;
+	TArray<FSuspensionInternalProcessing> SuspensionsInternalLeft;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
 	float TrackMass_kg = 600;
