@@ -164,7 +164,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void PositionAndAnimateDriveWheels(UStaticMeshComponent* WheelComponent, FSuspensionInternalProcessingC SuspensionSet, int32 SuspensionIndex, ESide side, bool FlipAnimation180Degrees);
-	
+	UFUNCTION(BlueprintCallable)
+	void TraceForSuspension(FVector Start, FVector End, float Radius, bool & BlockingHit, FVector & Location, FVector & ImpactPoint, FVector & ImpactNormal, UPrimitiveComponent *& Component);
+
 	UFUNCTION(BlueprintCallable)
 	void CalculateEngineAndUpdateDrive();
 	UFUNCTION(BlueprintCallable)

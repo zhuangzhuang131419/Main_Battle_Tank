@@ -264,99 +264,6 @@ void ATrackedVechile::UpdateTreadRelatedToVelocity(USplineComponent * RightSplin
 	}
 }
 
-//
-//void ATrackedVechile::AnimateTreadsInstancedMesh(USplineComponent * RightSpline, USplineComponent * LeftSpline, UInstancedStaticMeshComponent * TreadsRight, UInstancedStaticMeshComponent * TreadsLeft)
-//{
-//	if (ensure(RightSpline) && ensure(LeftSpline) && ensure(TreadsRight) && ensure(TreadsLeft))
-//	{
-//		float divident;
-//		float divisor;
-//
-//		// Right
-//		divident = TrackRightLinearVelocity * GetWorld()->DeltaTimeSeconds + TreadMeshOffsetRight;
-//		divisor = RightSpline->GetSplineLength();
-//		TreadMeshOffsetRight = fmod(divident, divisor);
-//		UE_LOG(LogTemp, Warning, TEXT("%d"), TreadsLastIndexCPlusPlus);
-//		for (size_t i = 0; i < TreadsLastIndexCPlusPlus; i++)
-//		{
-//			divident = (RightSpline->GetSplineLength() / TreadsOnSide) * i + TreadMeshOffsetRight;
-//			divisor = RightSpline->GetSplineLength();
-//			float distance;
-//			if (fmod(divident, divisor) < 0)
-//			{
-//				distance = fmod(divident, divisor) + divisor;
-//			}
-//			else
-//			{
-//				distance = fmod(divident, divisor);
-//			}
-//			FVector location = RightSpline->GetLocationAtDistanceAlongSpline(distance, ESplineCoordinateSpace::Local);
-//			FRotator rotation = RightSpline->GetRotationAtDistanceAlongSpline(distance, ESplineCoordinateSpace::Local);
-//			FVector right = RightSpline->GetRightVectorAtDistanceAlongSpline(distance, ESplineCoordinateSpace::Local);
-//
-//			if (right.Y < 0)
-//			{
-//				rotation.Roll = 180;
-//			}
-//
-//			TreadsRight->UpdateInstanceTransform(
-//				i,
-//				UKismetMathLibrary::MakeTransform(
-//					location,
-//					rotation,
-//					FVector(1, 1, 1)
-//				),
-//				false,
-//				i == TreadsLastIndexCPlusPlus,
-//				false
-//			);
-//
-//		}
-//
-//		// Left
-//		divident = TrackLeftLinearVelocity * GetWorld()->DeltaTimeSeconds + TreadMeshOffsetLeft;
-//		divisor = LeftSpline->GetSplineLength();
-//		TreadMeshOffsetLeft = fmod(divident, divisor);
-//
-//		for (size_t i = 0; i < TreadsLastIndexCPlusPlus; i++)
-//		{
-//			divident = (LeftSpline->GetSplineLength() / TreadsOnSide) * i + TreadMeshOffsetLeft;
-//			divisor = LeftSpline->GetSplineLength();
-//			float distance;
-//			if (fmod(divident, divisor) < 0)
-//			{
-//				distance = fmod(divident, divisor) + divisor;
-//			}
-//			else
-//			{
-//				distance = fmod(divident, divisor);
-//			}
-//			FVector location = LeftSpline->GetLocationAtDistanceAlongSpline(distance, ESplineCoordinateSpace::Local);
-//			FRotator rotation = LeftSpline->GetRotationAtDistanceAlongSpline(distance, ESplineCoordinateSpace::Local);
-//			FVector right = LeftSpline->GetRightVectorAtDistanceAlongSpline(distance, ESplineCoordinateSpace::Local);
-//
-//			if (right.Y < 0)
-//			{
-//				rotation.Roll = 180;
-//			}
-//
-//			TreadsLeft->UpdateInstanceTransform(
-//				i,
-//				UKismetMathLibrary::MakeTransform(
-//					location,
-//					rotation,
-//					FVector(1, 1, 1)
-//				),
-//				false,
-//				i == TreadsLastIndexCPlusPlus,
-//				false
-//			);
-//
-//		}
-//	}
-//}
-
-
 void ATrackedVechile::Initialise(UStaticMeshComponent * BodyToSet, UArrowComponent * COMToSet, USkeletalMeshComponent * TreadRToSet, USkeletalMeshComponent * TreadLToSet, UStaticMeshComponent * WheelSweepToSet, UStaticMeshComponent * TurrentToSet, USkeletalMeshComponent * CannonToSet)
 {
 	Body = BodyToSet;
@@ -453,6 +360,28 @@ void ATrackedVechile::PositionAndAnimateDriveWheels(UStaticMeshComponent * Wheel
 	}
 
 	WheelComponent->AddLocalRotation(localRotator);
+}
+
+void ATrackedVechile::TraceForSuspension(FVector Start, FVector End, float Radius, bool & BlockingHit, FVector & Location, FVector & ImpactPoint, FVector & ImpactNormal, UPrimitiveComponent *& Component)
+{
+	FHitResult HitResult;
+	FCollisionQueryParams CollisionQueryParams;
+	CollisionQueryParams.AddIgnoredActor(this);
+	GetWorld()->SweepSingleByChannel(
+		HitResult,
+		Start,
+		End,
+		FQuat::Identity,
+		ECollisionChannel::ECC_Visibility,
+		FCollisionShape::MakeSphere(Radius),
+		CollisionQueryParams
+
+	);
+	BlockingHit = HitResult.bBlockingHit;
+	Location = HitResult.Location;
+	ImpactPoint = HitResult.ImpactPoint;
+	ImpactNormal = HitResult.ImpactNormal;
+	Component = HitResult.GetComponent();
 }
 
 float ATrackedVechile::GetEngineTorque(float RevolutionPerMinute)
