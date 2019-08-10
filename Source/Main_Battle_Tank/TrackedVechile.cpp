@@ -17,7 +17,7 @@ void ATrackedVechile::PreCalculateMomentOfInteria()
 {
 	// 物理知识
 	// I（转动惯量）= m（质量）* r（质点和转轴垂直距离）
-	MomentInertia = (SproketMass_kg * 0.5 + TrackMass_kg) * SproketRadius_cm * SproketRadius_cm;
+	MomentInertia = (SprocketMass_kg * 0.5 + TrackMass_kg) * SproketRadius_cm * SproketRadius_cm;
 	UE_LOG(LogTemp, Warning, TEXT("The MomentInertia of sprocket is %f"), MomentInertia);
 }
 
@@ -495,6 +495,95 @@ void ATrackedVechile::CountFrictionContactPoint(TArray<FSuspensionInternalProces
 			TotalNumFrictionPoints++;
 		}
 	}
+}
+
+void ATrackedVechile::ApplyDriveForceAndGetFrictionForceOnSide(TArray<FSuspensionInternalProcessing> SuspensionsSide, FVector DriveForceSide, float TrackLinearVelocitySide, float & TotalFrictionTorqueSide, float & TotalRollingFrictionToqueSide)
+{
+	float TotalTrackFrictionTorque = 0;
+	float TotalTrackRollingFrictionTorque = 0;
+	for (FSuspensionInternalProcessing SuspensionSide: SuspensionsSide)
+	{
+		// 有接触才有摩擦
+		if (SuspensionSide.Engaged)
+		{
+			// 投影到法向量
+			auto WheelLoadN = UKismetMathLibrary::ProjectVectorOnToVector(SuspensionSide.SuspensionForce, SuspensionSide.WheelCollisionNormal).Size();
+			auto RelativeTrackVelocity = UKismetMathLibrary::ProjectVectorOnToPlane(
+				GetVelocityAtPointWorld(SuspensionSide.WheelCollisionLocation) - UKismetMathLibrary::GetForwardVector(GetActorRotation()) * TrackLinearVelocitySide,
+				SuspensionSide.WheelCollisionNormal
+			);
+			float MuStatic;
+			float MuKinetic;
+
+			
+
+			GetMuFromFrictionEllipse(
+				RelativeTrackVelocity.GetSafeNormal(),
+				UKismetMathLibrary::GetForwardVector(GetActorRotation()),
+				Mu_X_Static,
+				Mu_Y_Static,
+				Mu_X_Kinetic,
+				Mu_Y_Kinetic,
+				MuStatic,
+				MuKinetic
+			);
+
+			// FT = MV
+			FVector FrictionForce = -Body->GetMass() * RelativeTrackVelocity / GetWorld()->DeltaTimeSeconds / TotalNumFrictionPoints;
+
+			// Full friction force from vehicle movement
+			auto FullStaticFrictionForce = UKismetMathLibrary::ProjectVectorOnToVector(
+				FrictionForce,
+				UKismetMathLibrary::ProjectVectorOnToPlane(UKismetMathLibrary::GetForwardVector(GetActorRotation()), SuspensionSide.WheelCollisionNormal).GetSafeNormal()
+			) * Mu_X_Static + UKismetMathLibrary::ProjectVectorOnToVector(
+				FrictionForce,
+				UKismetMathLibrary::ProjectVectorOnToPlane(UKismetMathLibrary::GetRightVector(GetActorRotation()), SuspensionSide.WheelCollisionNormal).GetSafeNormal()
+			) * Mu_Y_Static;
+
+			// Full friction force from vehicle movement
+			auto FullKineticFrictionForce = UKismetMathLibrary::ProjectVectorOnToVector(
+				FrictionForce,
+				UKismetMathLibrary::ProjectVectorOnToPlane(UKismetMathLibrary::GetForwardVector(GetActorRotation()), SuspensionSide.WheelCollisionNormal).GetSafeNormal()
+			) * Mu_X_Kinetic + UKismetMathLibrary::ProjectVectorOnToVector(
+				FrictionForce,
+				UKismetMathLibrary::ProjectVectorOnToPlane(UKismetMathLibrary::GetRightVector(GetActorRotation()), SuspensionSide.WheelCollisionNormal).GetSafeNormal()
+			) * Mu_Y_Kinetic;
+
+			auto FullStaticDriveForce = Mu_X_Static * UKismetMathLibrary::ProjectVectorOnToPlane(DriveForceSide, SuspensionSide.WheelCollisionNormal);
+			auto FullKineticDriveForce = Mu_X_Kinetic * UKismetMathLibrary::ProjectVectorOnToPlane(DriveForceSide, SuspensionSide.WheelCollisionNormal);
+
+			FVector FullFrictionForceNorm;
+			FVector ApplicationForce;
+
+			// We want to apply higher friction if forces are bellow static friction limit
+			if ((FullStaticFrictionForce + FullStaticDriveForce).Size() >= WheelLoadN * MuStatic)
+			{
+				FullFrictionForceNorm = FullKineticFrictionForce.GetSafeNormal();
+				ApplicationForce = UKismetMathLibrary::ClampVectorSize(FullKineticFrictionForce + FullKineticDriveForce, 0, WheelLoadN * MuKinetic);
+			}
+			else
+			{
+				FullFrictionForceNorm = FullStaticFrictionForce.GetSafeNormal();
+				ApplicationForce = UKismetMathLibrary::ClampVectorSize(FullStaticFrictionForce + FullStaticDriveForce, 0, WheelLoadN * MuStatic);
+			}
+			Body->AddForceAtLocation(ApplicationForce, SuspensionSide.WheelCollisionLocation);
+			FVector FrictionEffectTransmission = -UKismetMathLibrary::ProjectVectorOnToVector(ApplicationForce, FullFrictionForceNorm) / Body->GetMass() * (TrackMass_kg + SprocketMass_kg);
+			TrackFrictionTorque = UKismetMathLibrary::ProjectVectorOnToVector(
+				UKismetMathLibrary::InverseTransformDirection(GetActorTransform(), FrictionEffectTransmission),
+				FVector(1, 0, 0)
+			).X * SproketRadius_cm;
+
+			// Make this force instead of torque
+			TrackRollingFrictionTorque = -UKismetMathLibrary::SignOfFloat(TrackLinearVelocitySide) * WheelLoadN *
+				(RollingFrictionCoeffient + UKismetMathLibrary::Abs(TrackLinearVelocitySide) * 0.000015);
+
+			TotalTrackFrictionTorque += TrackFrictionTorque;
+			TotalTrackRollingFrictionTorque += TrackRollingFrictionTorque;
+		}
+	}
+	TotalFrictionTorqueSide = TotalTrackFrictionTorque;
+	TotalRollingFrictionToqueSide = TotalTrackRollingFrictionTorque;
+
 }
 
 void ATrackedVechile::ShiftGear(int32 ShiftUpOrDown)

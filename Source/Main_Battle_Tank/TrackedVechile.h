@@ -173,6 +173,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void CountFrictionContactPoint(TArray<FSuspensionInternalProcessing> SuspSide);
 	UFUNCTION(BlueprintCallable)
+	void ApplyDriveForceAndGetFrictionForceOnSide(TArray<FSuspensionInternalProcessing> SuspensionSide, FVector DriveForceSide, float TrackLinearVelocitySide, float& TotalFrictionTorqueSide, float& TotalRollingFrictionToqueSide);
+	UFUNCTION(BlueprintCallable)
 	void ShiftGear(int32 ShiftUpOrDown);
 	UFUNCTION(BlueprintCallable)
 	void UpdateAutoGearBox();
@@ -287,7 +289,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
 	float TrackMass_kg = 600;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
-	float SproketMass_kg = 65;
+	float SprocketMass_kg = 65;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
 	float SproketRadius_cm = 24;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
@@ -326,6 +328,8 @@ public:
 	float GearDownShiftPrc = 0.05;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
 	float EngineExtraPowerRatio = 3;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
+	float RollingFrictionCoeffient = 0.02;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
 	UCurveFloat* EngineTorqueCurve;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
