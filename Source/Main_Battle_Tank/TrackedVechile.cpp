@@ -52,7 +52,6 @@ void ATrackedVechile::BeginPlay()
 void ATrackedVechile::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 // Called to bind functionality to input
@@ -106,14 +105,14 @@ void ATrackedVechile::UpdateAxlsVelocity()
 	AxisAngularVelocity = (UKismetMathLibrary::Abs(TrackRightAngularVelocity) + UKismetMathLibrary::Abs(TrackLeftAngularVelocity)) / 2;
 }
 
-void ATrackedVechile::CheckWheelCollision(int32 SuspIndex, TArray<FSuspensionInternalProcessing> SuspensionArray, ESide Side)
+void ATrackedVechile::CheckWheelCollision(int32 SuspIndex, UPARAM(ref)TArray<FSuspensionInternalProcessing>& SuspensionArray, ESide Side)
 {
-	auto SuspensionLength = SuspensionArray[SuspIndex].Length;
+	auto SuspensionLength = (SuspensionArray)[SuspIndex].Length;
 	auto SuspensionStiffness = SuspensionArray[SuspIndex].Stiffness;
 	auto SuspensionDamping = SuspensionArray[SuspIndex].Damping;
 	auto SuspensionPreviousLength = SuspensionArray[SuspIndex].PreviousLength;
 
-	// 转换成世界坐标
+	// 计算世界坐标
 	auto SuspensionWorldX = UKismetMathLibrary::TransformDirection(GetActorTransform(), UKismetMathLibrary::GetForwardVector(SuspensionArray[SuspIndex].RootRot));
 	auto SuspensionWorldY = UKismetMathLibrary::TransformDirection(GetActorTransform(), UKismetMathLibrary::GetRightVector(SuspensionArray[SuspIndex].RootRot));
 	auto SuspensionWorldZ = UKismetMathLibrary::TransformDirection(GetActorTransform(), UKismetMathLibrary::GetUpVector(SuspensionArray[SuspIndex].RootRot));
@@ -139,36 +138,33 @@ void ATrackedVechile::CheckWheelCollision(int32 SuspIndex, TArray<FSuspensionInt
 	FVector SuspensionForce;
 	if (bBlockingHit)
 	{
-		//UE_LOG(LogTemp, Warning, TEXT("Start: %s, End: %s, Location: %s")
-		//	, *SuspensionWorldLocation.ToString()
-		//	, *(SuspensionWorldLocation - SuspensionWorldZ * SuspensionLength).ToString()
-		//	, *Location.ToString());
 		auto SuspensionNewLength = (SuspensionWorldLocation - Location).Size();
 
 		SuspensionForce = AddSuspensionForce(
-			SuspensionLength, 
-			SuspensionNewLength, 
-			SuspensionPreviousLength, 
-			SuspensionStiffness, 
-			SuspensionDamping, 
-			SuspensionWorldZ, 
+			SuspensionLength,
+			SuspensionNewLength,
+			SuspensionPreviousLength,
+			SuspensionStiffness,
+			SuspensionDamping,
+			SuspensionWorldZ,
 			SuspensionWorldLocation);
 
 		SuspensionArray[SuspIndex].PreviousLength = SuspensionNewLength;
 		SuspensionArray[SuspIndex].SuspensionForce = SuspensionForce;
-		SuspensionArray[SuspIndex].WheelCollisionLocation = Location;
+		SuspensionArray[SuspIndex].WheelCollisionLocation = ImpactPoint;
 		SuspensionArray[SuspIndex].WheelCollisionNormal = ImpactNormal;
 		SuspensionArray[SuspIndex].Engaged = true;
+		PushSuspesionToEnvironment(Component, SuspensionForce, Location);
 	}
 	else
 	{
+		SuspensionForce = FVector();
 		SuspensionArray[SuspIndex].PreviousLength = SuspensionLength;
 		SuspensionArray[SuspIndex].SuspensionForce = FVector();
 		SuspensionArray[SuspIndex].WheelCollisionLocation = FVector();
 		SuspensionArray[SuspIndex].WheelCollisionNormal = FVector();
 		SuspensionArray[SuspIndex].Engaged = false;
 	}
-	PushSuspesionToEnvironment(Component, SuspensionForce, Location);
 }
 
 bool ATrackedVechile::PutToSleep()
@@ -571,7 +567,7 @@ void ATrackedVechile::UpdateAutoGearBox()
 	}
 }
 
-void ATrackedVechile::GetMuFromFrictionEllipse(FVector VelocityDirectionNormalized, FVector ForwardVector, float Mu_X_Static, float Mu_Y_Static, float Mu_X_Kinetic, float Mu_Y_Kinetic, OUT float & Mu_Static, OUT float & Mu_Kinetic)
+void ATrackedVechile::GetMuFromFrictionEllipse(FVector VelocityDirectionNormalized, FVector ForwardVector, float Mu_X_Static, float Mu_Y_Static, float Mu_X_Kinetic, float Mu_Y_Kinetic, float & Mu_Static, float & Mu_Kinetic)
 {
 	// 计算合成的摩擦力，在椭圆内计算
 	float forwardVelocity = UKismetMathLibrary::Dot_VectorVector(VelocityDirectionNormalized, ForwardVector);

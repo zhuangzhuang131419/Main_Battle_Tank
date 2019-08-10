@@ -139,7 +139,7 @@ public:
 	void UpdateAxlsVelocity();
 
 	UFUNCTION(BlueprintCallable)
-	void CheckWheelCollision(int32 SuspIndex, TArray<FSuspensionInternalProcessing> SuspensionArray, ESide Side);
+	void CheckWheelCollision(int32 SuspIndex, UPARAM(ref)TArray<FSuspensionInternalProcessing>& SuspensionArray, ESide Side);
 	UFUNCTION(BlueprintCallable)
 	bool PutToSleep();
 	// local
@@ -176,7 +176,8 @@ public:
 	void ShiftGear(int32 ShiftUpOrDown);
 	UFUNCTION(BlueprintCallable)
 	void UpdateAutoGearBox();
-	void GetMuFromFrictionEllipse(FVector VelocityDirectionNormalized, FVector ForwardVector, float Mu_X_Static, float Mu_Y_Static, float Mu_X_Kinetic, float Mu_Y_Kinetic, OUT float& Mu_Static, OUT float& Mu_Kinetic);
+	UFUNCTION(BlueprintCallable)
+	void GetMuFromFrictionEllipse(FVector VelocityDirectionNormalized, FVector ForwardVector, float Mu_X_Static, float Mu_Y_Static, float Mu_X_Kinetic, float Mu_Y_Kinetic, float& Mu_Static, float& Mu_Kinetic);
 	UFUNCTION(BlueprintCallable)
 	void GetThrottleInputForAutoHandling(float InputVehicleLeftRight, float InputVehicleForwardBackward);
 
@@ -354,7 +355,9 @@ private:
 	void Brake();
 	void Backward();
 	void UpdateCoefficient();
+	UFUNCTION(BlueprintCallable)
 	FVector AddSuspensionForce(float SuspensionLength, float SuspensionNewLength, float SuspensionPreviousLength, float SuspensionStiffness, float SuspensionDamping, FVector SuspensionWorldZ, FVector SuspensionWorldLocation);
+	UFUNCTION(BlueprintCallable)
 	void PushSuspesionToEnvironment(UPrimitiveComponent* CollisionPrimitive, FVector SuspensionForce, FVector WheelCollisionLocation);
 
 	float AxisInputValue;
