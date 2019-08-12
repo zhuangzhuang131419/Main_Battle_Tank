@@ -242,7 +242,6 @@ FVector ATrackedVechile::GetVelocityAtPointWorld(FVector PointLoc)
 float ATrackedVechile::ApplyBrake(float AngularVelocity, float BrakeRatio)
 {
 	// 刚体定轴转动
-
 	float BrakeImpulse = GetWorld()->DeltaTimeSeconds * BrakeForce * BrakeRatio;
 
 	if (UKismetMathLibrary::Abs(AngularVelocity) > UKismetMathLibrary::Abs(BrakeImpulse))

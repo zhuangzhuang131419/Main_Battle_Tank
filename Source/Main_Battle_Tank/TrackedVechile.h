@@ -348,8 +348,6 @@ private:
 	float AxisInputValue;
 	float EngineRPM;
 
-	float LastAutoGearBoxAxisCheck;
-
 	float TreadUVOffsetRight;
 	float TreadUVOffsetLeft;
 

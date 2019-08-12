@@ -109,19 +109,7 @@ void UTankAimingComponent::Fire()
 	if (ensure(CannonRecoil))
 	{
 		Cannon->PlayAnimation(CannonRecoil, false);
-	}
-	
-	/*ATrackedVechile* targetVehicle = Cast<ATrackedVechile>(GetOwner());
-	if (ensure(targetVehicle))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Recoil"))
-		UStaticMeshComponent* targetBody = targetVehicle->GetBody();
-		FVector worldCannonLocation = UKismetMathLibrary::TransformLocation(targetVehicle->GetActorTransform(), Cannon->GetRelativeTransform().GetLocation());
-		FVector ConnonDirection = (worldCannonLocation - Cannon->GetSocketLocation(FName("Muzzle"))).GetSafeNormal();
-		targetBody->AddImpulseAtLocation(ConnonDirection * RecoilImpulse, targetBody->GetCenterOfMass());
-	}*/
-	
-	
+	}	
 }
 
 void UTankAimingComponent::ElevateCannon(float RelativeSpeed)
