@@ -8,9 +8,17 @@
 // Sets default values
 ATrackedVechile::ATrackedVechile()
 {
- 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+}
+
+void ATrackedVechile::Initialise(UStaticMeshComponent * BodyToSet, UArrowComponent * COMToSet, UStaticMeshComponent * TurrentToSet, USkeletalMeshComponent * CannonToSet)
+{
+	Body = BodyToSet;
+	COM = COMToSet;
+	Turrent = TurrentToSet;
+	Cannon = CannonToSet;
 }
 
 void ATrackedVechile::PreCalculateMomentOfInteria()
@@ -26,26 +34,42 @@ void ATrackedVechile::VisualizeCenterOfMass()
 	COM->SetWorldLocation(Body->GetCenterOfMass());
 }
 
-void ATrackedVechile::FindNeutralGearAndSetStartingGear()
+void ATrackedVechile::ConstructSuspension()
 {
-	for (size_t i = 0; i < GearRatios.Num(); i++)
+	for (size_t i = 0; i < SuspensionHandleRight.Num(); i++)
 	{
-		if (GearRatios[i] == 0)
-		{
-			NeutralGearIndex = i;
-			break;
-		}
+		SuspensionsInternalRight.Add(
+			FSuspensionInternalProcessing(
+				SuspensionHandleRight[i]->GetRelativeTransform().GetLocation(),
+				SuspensionHandleRight[i]->GetRelativeTransform().GetRotation().Rotator(),
+				SuspensionSetUpRight[i].MaxLength,
+				SuspensionSetUpRight[i].CollisionRadius,
+				SuspensionSetUpRight[i].StiffnessForce,
+				SuspensionSetUpRight[i].DampingForce
+			)
+		);
 	}
 
-	// We start in first gear in Automatic Gear Box
-	CurrentGear = AutoGearBox ? NeutralGearIndex + 1 : NeutralGearIndex;
+	for (size_t i = 0; i < SuspensionHandleLeft.Num(); i++)
+	{
+		SuspensionsInternalLeft.Add(
+			FSuspensionInternalProcessing(
+				SuspensionHandleLeft[i]->GetRelativeTransform().GetLocation(),
+				SuspensionHandleLeft[i]->GetRelativeTransform().GetRotation().Rotator(),
+				SuspensionSetUpLeft[i].MaxLength,
+				SuspensionSetUpLeft[i].CollisionRadius,
+				SuspensionSetUpLeft[i].StiffnessForce,
+				SuspensionSetUpLeft[i].DampingForce
+			)
+		);
+	}
 }
 
 // Called when the game starts or when spawned
 void ATrackedVechile::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 }
 
 // Called every frame
@@ -248,44 +272,47 @@ void ATrackedVechile::AnimateSprocketOrIdler(UStaticMeshComponent * SprocketOrId
 
 void ATrackedVechile::AnimateTreadsSplineControlPoints(UStaticMeshComponent * WheelMeshComponent, USplineComponent * TreadSplineComponent, TArray<FVector> SplineCoordinates, TArray<FSuspensionSetUp> SuspensionSetUp, int32 SuspensionIndex)
 {
-	auto BottomCPIndex = SuspensionIndex + 3;
-	auto TopCPIndex = 16 - SuspensionIndex;
-	TreadSplineComponent->SetLocationAtSplinePoint(
-		BottomCPIndex,
-		FVector(
-			WheelMeshComponent->GetRelativeTransform().GetLocation().X,
-			SplineCoordinates[BottomCPIndex].Y,
-			WheelMeshComponent->GetRelativeTransform().GetLocation().Z - SuspensionSetUp[SuspensionIndex].CollisionRadius + TreadHalfThickness
-		),
-		ESplineCoordinateSpace::Local,
-		true
-	);
-
-	TreadSplineComponent->SetLocationAtSplinePoint(
-		TopCPIndex,
-		FVector(
-			WheelMeshComponent->GetRelativeTransform().GetLocation().X,
-			SplineCoordinates[TopCPIndex].Y,
-			UKismetMathLibrary::Max(
-				WheelMeshComponent->GetRelativeTransform().GetLocation().Z + SuspensionSetUp[SuspensionIndex].CollisionRadius - TreadHalfThickness,
-				SplineCoordinates[TopCPIndex].Z
-			)
-		),
-		ESplineCoordinateSpace::Local,
-		true
-	);
-}
-
-void ATrackedVechile::AnimateTreadsMaterial()
-{
-	if (ensure(TreadMaterialRight) && ensure(TreadMaterialLeft))
+	if (ensure(WheelMeshComponent) && ensure(TreadSplineComponent))
 	{
-		TreadUVOffsetRight += GetWorld()->DeltaTimeSeconds * TrackRightLinearVelocity / TreadLength * TreadUVTiles;
-		TreadUVOffsetLeft += GetWorld()->DeltaTimeSeconds * TrackLeftLinearVelocity / TreadLength * TreadUVTiles;
-		TreadMaterialRight->SetScalarParameterValue(FName("UVOffset"), TreadUVOffsetRight);
-		TreadMaterialLeft->SetScalarParameterValue(FName("UVOffset"), TreadUVOffsetLeft);
+		auto BottomCPIndex = SuspensionIndex + 3;
+		auto TopCPIndex = 16 - SuspensionIndex;
+		TreadSplineComponent->SetLocationAtSplinePoint(
+			BottomCPIndex,
+			FVector(
+				WheelMeshComponent->GetRelativeTransform().GetLocation().X,
+				SplineCoordinates[BottomCPIndex].Y,
+				WheelMeshComponent->GetRelativeTransform().GetLocation().Z - SuspensionSetUp[SuspensionIndex].CollisionRadius + TreadHalfThickness
+			),
+			ESplineCoordinateSpace::Local,
+			true
+		);
+
+		TreadSplineComponent->SetLocationAtSplinePoint(
+			TopCPIndex,
+			FVector(
+				WheelMeshComponent->GetRelativeTransform().GetLocation().X,
+				SplineCoordinates[TopCPIndex].Y,
+				UKismetMathLibrary::Max(
+					WheelMeshComponent->GetRelativeTransform().GetLocation().Z + SuspensionSetUp[SuspensionIndex].CollisionRadius - TreadHalfThickness,
+					SplineCoordinates[TopCPIndex].Z
+				)
+			),
+			ESplineCoordinateSpace::Local,
+			true
+		);
 	}
 }
+
+//void ATrackedVechile::AnimateTreadsMaterial()
+//{
+//	if (ensure(TreadMaterialRight) && ensure(TreadMaterialLeft))
+//	{
+//		TreadUVOffsetRight += GetWorld()->DeltaTimeSeconds * TrackRightLinearVelocity / TreadLength * TreadUVTiles;
+//		TreadUVOffsetLeft += GetWorld()->DeltaTimeSeconds * TrackLeftLinearVelocity / TreadLength * TreadUVTiles;
+//		TreadMaterialRight->SetScalarParameterValue(FName("UVOffset"), TreadUVOffsetRight);
+//		TreadMaterialLeft->SetScalarParameterValue(FName("UVOffset"), TreadUVOffsetLeft);
+//	}
+//}
 
 void ATrackedVechile::UpdateTreadRelatedToVelocity(USplineComponent * RightSpline, UInstancedStaticMeshComponent * TreadsRight, float LinearVelocity, float& TreadMeshOffset)
 {
@@ -323,17 +350,6 @@ void ATrackedVechile::UpdateTreadRelatedToVelocity(USplineComponent * RightSplin
 			);
 		}
 	}
-}
-
-void ATrackedVechile::Initialise(UStaticMeshComponent * BodyToSet, UArrowComponent * COMToSet, USkeletalMeshComponent * TreadRToSet, USkeletalMeshComponent * TreadLToSet, UStaticMeshComponent * WheelSweepToSet, UStaticMeshComponent * TurrentToSet, USkeletalMeshComponent * CannonToSet)
-{
-	Body = BodyToSet;
-	COM = COMToSet;
-	TreadR = TreadRToSet;
-	TreadL = TreadLToSet;
-	WheelSweep = WheelSweepToSet;
-	Turrent = TurrentToSet;
-	Cannon = CannonToSet;
 }
 
 void ATrackedVechile::BuildTrackSplineCPlusPlus(USplineComponent * SplineComponent, UInstancedStaticMeshComponent * TreadsMeshComponent, TArray<FVector> SplineCoordinates, TArray<FVector> SplineTangents, float TreadsOnSide)
@@ -381,7 +397,7 @@ void ATrackedVechile::AnimateTreadsInstancedMeshCPlusPlus(USplineComponent * Spl
 	default:
 		break;
 	}
-	
+
 }
 
 void ATrackedVechile::PositionAndAnimateDriveWheels(UStaticMeshComponent * WheelComponent, FSuspensionInternalProcessing SuspensionSet, int32 SuspensionIndex, ESide side, bool FlipAnimation180Degrees)
@@ -458,7 +474,7 @@ float ATrackedVechile::GetEngineTorque(float RevolutionPerMinute)
 float ATrackedVechile::GetGearBoxTorque(float EngineTorque)
 {
 	// 变速器
-	float GearBoxTorque = GearRatios[CurrentGear] * DifferentialRatio * TransmissionEfficiency * EngineTorque * EngineExtraPowerRatio;
+	float GearBoxTorque = GearRatio * DifferentialRatio * TransmissionEfficiency * EngineTorque * EngineExtraPowerRatio;
 	return ReverseGear ? -GearBoxTorque : GearBoxTorque;
 }
 
@@ -466,7 +482,7 @@ float ATrackedVechile::GetEngineRPMFromAxls(float AxlsAngularVelocity)
 {
 	/// 物理知识
 	// w(角速度) = 2 * PI * n（转速）
-	return (AxlsAngularVelocity * GearRatios[CurrentGear] * DifferentialRatio * 60/*second to minute*/) / UKismetMathLibrary::GetPI() / 2;
+	return (AxlsAngularVelocity * GearRatio * DifferentialRatio * 60/*second to minute*/) / UKismetMathLibrary::GetPI() / 2;
 }
 
 void ATrackedVechile::CalculateEngineAndUpdateDrive()
@@ -501,7 +517,8 @@ void ATrackedVechile::ApplyDriveForceAndGetFrictionForceOnSide(TArray<FSuspensio
 {
 	float TotalTrackFrictionTorque = 0;
 	float TotalTrackRollingFrictionTorque = 0;
-	for (FSuspensionInternalProcessing SuspensionSide: SuspensionsSide)
+	// 便利所有的Suspension
+	for (FSuspensionInternalProcessing SuspensionSide : SuspensionsSide)
 	{
 		// 有接触才有摩擦
 		if (SuspensionSide.Engaged)
@@ -515,7 +532,7 @@ void ATrackedVechile::ApplyDriveForceAndGetFrictionForceOnSide(TArray<FSuspensio
 			float MuStatic;
 			float MuKinetic;
 
-			
+
 
 			GetMuFromFrictionEllipse(
 				RelativeTrackVelocity.GetSafeNormal(),
@@ -586,38 +603,12 @@ void ATrackedVechile::ApplyDriveForceAndGetFrictionForceOnSide(TArray<FSuspensio
 
 }
 
-void ATrackedVechile::ShiftGear(int32 ShiftUpOrDown)
-{
-	int32 min;
-	int32 max;
-
-	if (ReverseGear)
-	{
-		min = 0;
-		max = NeutralGearIndex + 1;
-	}
-	else
-	{
-		min = NeutralGearIndex - 1;
-		max = GearRatios.Num();
-	}
-
-
-	if (AutoGearBox)
-	{
-		CurrentGear = FMath::Clamp<float>(NeutralGearIndex + 1, min, max);
-	}
-	else
-	{
-		CurrentGear = FMath::Clamp<float>(CurrentGear + ShiftUpOrDown, 0, GearRatios.Num());
-		ReverseGear = CurrentGear >= NeutralGearIndex ? false : true;
-	}
-}
-
 void ATrackedVechile::UpdateAutoGearBox()
 {
-	if (Throttle > 0 && AutoGearBox)
+	return;
+	/*if (Throttle > 0 && AutoGearBox)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("UpdateAutoGearBox"));
 		float MinTime;
 		float MaxTime;
 		EngineTorqueCurve->GetTimeRange(MinTime, MaxTime);
@@ -653,7 +644,7 @@ void ATrackedVechile::UpdateAutoGearBox()
 		}
 
 		LastAutoGearBoxAxisCheck = AxisAngularVelocity;
-	}
+	}*/
 }
 
 void ATrackedVechile::GetMuFromFrictionEllipse(FVector VelocityDirectionNormalized, FVector ForwardVector, float Mu_X_Static, float Mu_Y_Static, float Mu_X_Kinetic, float Mu_Y_Kinetic, float & Mu_Static, float & Mu_Kinetic)
@@ -732,7 +723,6 @@ void ATrackedVechile::GetThrottleInputForAutoHandling(float InputVehicleLeftRigh
 void ATrackedVechile::Forward()
 {
 	ReverseGear = false;
-	ShiftGear(0);
 	UpdateCoefficient();
 }
 
@@ -745,7 +735,6 @@ void ATrackedVechile::Brake()
 void ATrackedVechile::Backward()
 {
 	ReverseGear = true;
-	ShiftGear(0);
 	UpdateCoefficient();
 }
 
@@ -761,7 +750,7 @@ FVector ATrackedVechile::AddSuspensionForce(float SuspensionLength, float Suspen
 	float SuspensionVelocity = (SuspensionNewLength - SuspensionPreviousLength) / GetWorld()->DeltaTimeSeconds;
 	// 物理知识
 	// F（阻尼力） = -c（阻尼系数）* v（振子运动速度）
-	auto SuspensionForce = (FMath::Clamp<float>(SpringCompressionRatio, 0, 1) * SuspensionStiffness - SuspensionDamping *  SuspensionVelocity) * SuspensionWorldZ;
+	auto SuspensionForce = (FMath::Clamp<float>(SpringCompressionRatio, 0, 1) * SuspensionStiffness - SuspensionDamping * SuspensionVelocity) * SuspensionWorldZ;
 	Body->AddForceAtLocation(SuspensionForce, SuspensionWorldLocation);
 	return SuspensionForce;
 }

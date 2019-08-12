@@ -28,10 +28,6 @@ struct FSuspensionSetUp
 {
 	GENERATED_USTRUCT_BODY()
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	FVector RootLoc;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	FRotator RootRot;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float MaxLength;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float CollisionRadius;
@@ -71,16 +67,15 @@ struct FSuspensionInternalProcessing
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float Damping;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	float PreviousLength;
+	float PreviousLength = 0;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	FVector SuspensionForce;
+	FVector SuspensionForce = FVector();
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	FVector WheelCollisionLocation;
+	FVector WheelCollisionLocation = FVector();
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	FVector WheelCollisionNormal;
+	FVector WheelCollisionNormal = FVector();
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	bool Engaged = false;
-	EPhysicalSurface HitMaterial;
 
 	FSuspensionInternalProcessing() {}
 
@@ -107,9 +102,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "SetUp")
 	void Initialise(UStaticMeshComponent* BodyToSet,
 			UArrowComponent* COMToSet,
-			USkeletalMeshComponent* TreadRToSet,
-			USkeletalMeshComponent* TreadLToSet,
-			UStaticMeshComponent* WheelSweepToSet,
 			UStaticMeshComponent* TurrentToSet,
 			USkeletalMeshComponent* CannonToSet);
 
@@ -118,7 +110,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void VisualizeCenterOfMass();
 	UFUNCTION(BlueprintCallable)
-	void FindNeutralGearAndSetStartingGear();
+	void ConstructSuspension();
 
 protected:
 	// Called when the game starts or when spawned
@@ -153,8 +145,8 @@ public:
 	void AnimateSprocketOrIdler(UStaticMeshComponent* SprocketOrIdlerComponnet, float TrackAngularVelocity, bool FlipAnimation180Degrees);
 	UFUNCTION(BlueprintCallable)
 	void AnimateTreadsSplineControlPoints(UStaticMeshComponent* WheelMeshComponent, USplineComponent* TreadSplineComponent, TArray<FVector> SplineCoordinates, TArray<FSuspensionSetUp> SuspensionSetUp, int32 SuspensionIndex);
-	UFUNCTION(BlueprintCallable)
-	void AnimateTreadsMaterial();
+	//UFUNCTION(BlueprintCallable)
+	//void AnimateTreadsMaterial();
 
 	void UpdateTreadRelatedToVelocity(USplineComponent * RightSpline, UInstancedStaticMeshComponent * TreadsRight, float LinearVelocity, float& TreadMeshOffset);
 	UFUNCTION(BlueprintCallable)
@@ -175,8 +167,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ApplyDriveForceAndGetFrictionForceOnSide(TArray<FSuspensionInternalProcessing> SuspensionSide, FVector DriveForceSide, float TrackLinearVelocitySide, float& TotalFrictionTorqueSide, float& TotalRollingFrictionToqueSide);
 	UFUNCTION(BlueprintCallable)
-	void ShiftGear(int32 ShiftUpOrDown);
-	UFUNCTION(BlueprintCallable)
 	void UpdateAutoGearBox();
 	UFUNCTION(BlueprintCallable)
 	void GetMuFromFrictionEllipse(FVector VelocityDirectionNormalized, FVector ForwardVector, float Mu_X_Static, float Mu_Y_Static, float Mu_X_Kinetic, float Mu_Y_Kinetic, float& Mu_Static, float& Mu_Kinetic);
@@ -186,10 +176,6 @@ public:
 
 	UPROPERTY(BlueprintReadWrite)
 	int32 TreadsLastIndexCPlusPlus = 63;
-	UPROPERTY(BlueprintReadWrite)
-	int32 NeutralGearIndex;
-	UPROPERTY(BlueprintReadWrite)
-	int32 CurrentGear;
 
 	
 	UPROPERTY(BlueprintReadWrite)
@@ -228,12 +214,7 @@ public:
 	// Torque
 	UPROPERTY(BlueprintReadWrite, Category = "Physics")
 	float EngineTorque;
-	// 调整Axls分配给右履带的权重
-	UPROPERTY(BlueprintReadWrite, Category = "Physics")
-	float TrackTorqueTransferRight;
-	// 调整Axls分配给左履带的权重
-	UPROPERTY(BlueprintReadWrite, Category = "Physics")
-	float TrackTorqueTransferLeft;
+	
 	UPROPERTY(BlueprintReadWrite, Category = "Physics")
 	float TrackRightTorque;
 	UPROPERTY(BlueprintReadWrite, Category = "Physics")
@@ -323,21 +304,21 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
 	bool AutoGearBox = true;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
-	float GearUpShiftPrc = 0.9;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
-	float GearDownShiftPrc = 0.05;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
 	float EngineExtraPowerRatio = 3;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
 	float RollingFrictionCoeffient = 0.02;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
 	UCurveFloat* EngineTorqueCurve;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
-	TArray<float> GearRatios = { 4.35, 0, 3.81, 1.93, 1 };
+	float GearRatio = 3.81;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
 	TArray<FSuspensionSetUp> SuspensionSetUpRight;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
 	TArray<FSuspensionSetUp> SuspensionSetUpLeft;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
+	TArray<UStaticMeshComponent*> SuspensionHandleRight;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Performance")
+	TArray<UStaticMeshComponent*> SuspensionHandleLeft;
 
 	
 	UStaticMeshComponent* GetBody() { return Body; }
@@ -372,6 +353,10 @@ private:
 	float TreadUVOffsetRight;
 	float TreadUVOffsetLeft;
 
-
+	// Torque
+	// 调整Axls分配给右履带的权重
+	float TrackTorqueTransferRight;
+	// 调整Axls分配给左履带的权重
+	float TrackTorqueTransferLeft;
 	
 };
